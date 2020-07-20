@@ -146,15 +146,15 @@ options:
             - Default value is used by the kernel if omitted
 
     vlan_options:
-        type: complex
+        type: dict
         aliases: [type_options]
         description:
             - Options, specific for I(type)=C(vlan)
             - Should not be used for any other type
-        contains:
+        suboptions:
             protoocol:
                 type: str
-                choises: [802.1q, 802.1ad]
+                choices: [802.1q, 802.1ad]
                 default: 802.1q
                 description:
                   - VLAN protocol to use. 802.1q is 'usual' VLANs and
@@ -195,25 +195,25 @@ options:
 
             ingress_qos_map:
                 type: list
-                elements_type: str
+                elements: str
                 description:
                     - Mapping of VLAN header prio field for incoming frames.
                     - Each mapping in a list has form "FROM:TO"
 
             egress_qos_map:
                 type: list
-                elements_type: str
+                elements: str
                 description:
                     - Mapping of VLAN header prio field for outgoing frames.
                     - Each mapping in a list has form "FROM:TO"
 
     vxlan_options:
-        type: complex
+        type: dict
         aliases: [type_options]
         description:
             - Options, specific for I(type)=C(vxlan)
             - Should not be used for any other type
-        contains:
+        suboptions:
             id:
                 type: int
                 description:
@@ -256,7 +256,7 @@ options:
 
             df:
                 type: str
-                choises: [set, unset, inherit]
+                choices: [set, unset, inherit]
                 description:
                     - Value for do not fragment flag.
                     - C(inherit) value copy it from original IP header.
@@ -350,12 +350,12 @@ options:
                     - Supported only for external control plane.
 
     veth_options:
-        type: complex
+        type: dict
         aliases: [type_options]
         description:
             - Options, specific for I(type)=C(veth).
             - Should not be used for any other type.
-        contains:
+        suboptions:
             peer_name:
                 type: str
                 description:
@@ -363,13 +363,13 @@ options:
                     - Automatically assigned name is used if not specified.
 
     gre_options:
-        type: complex
+        type: dict
         aliases: [type_options]
         description:
             - Options, specific for I(type)=C(gre).
             - Should not be used for any other type.
             - Secondary encapsulation options (fou/gue) are not supported.
-        contains:
+        suboptions:
             remote:
                 type: str
                 required: true
@@ -469,13 +469,13 @@ options:
                     - Use externally controlled tunnels.
 
     gretap_options:
-        type: complex
+        type: dict
         aliases: [type_options]
         description:
             - Options, specific for I(type)=C(gretap).
             - Should not be used for any other type.
             - Secondary encapsulation options (fou/gue) are not supported.
-        contains:
+        suboptions:
             remote:
                 type: str
                 required: true
@@ -628,11 +628,11 @@ EXAMPLES = """
 RETURN = """
 failed_command:
     description: Failed command to ip utility.
-    return: failure
+    returned: failure
     type: str
 msg:
     description: Error message.
-    return: failure
+    returned: failure
     type: str
 """
 
