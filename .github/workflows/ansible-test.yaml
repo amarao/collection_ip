@@ -34,5 +34,8 @@ jobs:
     - name: Sanity tests with dependencies
       run: ansible-test sanity --requirements --python 3.8
       working-directory: ansible_collections/amarao/ip
+    - name: Unit tests with dependencies
+      run: ansible-test units --requirements --python 3.8
+      working-directory: ansible_collections/amarao/ip
     - name: Cleanup
       run: rm -r ansible_collections/amarao/ip/tests/output
