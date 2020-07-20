@@ -22,7 +22,8 @@ IF1_data = {
     "name": 'eth0',
     "promisc": False,
     "txqueuelen": 1000,
-    "state": 'up'
+    "state": 'up',
+    "master": None
 }
 
 
@@ -38,7 +39,8 @@ IF2_data = {
     "name": 'veth3',
     "promisc": True,
     "txqueuelen": 1,
-    "state": 'down'
+    "state": 'down',
+    "master": 'ovs-system'
 }
 IF3 = '118: vcan9: <NOARP> mtu 72 qdisc noop state DOWN mode DEFAULT group default qlen 1000\\    link/can \\    alias foo'  # noqa
 IF3_data = {
@@ -52,7 +54,8 @@ IF3_data = {
     "name": 'vcan9',
     "promisc": False,
     "txqueuelen": 1000,
-    "state": 'down'
+    "state": 'down',
+    "master": None
 }
 
 
@@ -108,7 +111,8 @@ def elink(module):
             'promisc': False,
             'address': '00:23:54:84:d1:7a',
             'broadcast': 'ff:ff:ff:ff:ff:ff',
-            'alias': None
+            'alias': None,
+            'master': None
         }
     ),
     (
