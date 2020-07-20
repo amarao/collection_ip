@@ -30,7 +30,7 @@ description: >
     promisc, txqueuelen, address, broadcast, netns, alias.
     Does not currently support some features of ip link set, such as
     allmulticast, dynamic, protodown, trailers, link-netnsid, xdp, xdpgeneric,
-    xdpdrv, xdpoffload, master/nomaster, addrgenmode, macaddr, vrf.
+    xdpdrv, xdpoffload, addrgenmode, macaddr, vrf.
 
 options:
     name:
@@ -122,6 +122,28 @@ options:
             - If no alias is specified, it does not change.
             - Removing aliases from an interface is not currently supported.
 
+    master:
+        type: str
+        description:
+            - Specify a device to become a master for this interface.
+            - Normally used to plug device into a bridge or a bond.
+            - Device become a slave of that device.
+            - Master should be a compound device.
+            - Cause 'not supported' error if target device can not be a master.
+            - If no master is specified, it does not change anything.
+            - To remove master use I(nomaster) option.
+            - If device is a slave of a different device
+              (have other device as master) it changes master.
+            - Conflicts with I(nomaster) option.
+
+    nomaster:
+        type: bool
+        description:
+            - Remove device from been master for other compound device.
+            - Remove only if nomaster is set to True.
+            - If value is false, it's ignored.
+            - Conflicts with I(master) option.
+
     group:
         type: str
         description:
@@ -211,6 +233,16 @@ EXAMPLES = """
     promisc: true
     address: ba:ba:ba:ba:ba:ba
     group: '12'
+
+- name: Plug dummy0 into br0 bridge
+  ip_link_device_attribute:
+    name: dummy0
+    master: br0
+
+- name: Remove dummy0 from br0
+  ip_link_device_attribute:
+    name: dummy0
+    nomaster: true
 """
 
 RETURN = """
@@ -256,6 +288,9 @@ interfaces:
       alias:
         description: Alias for the interface (C(None) if not present).
         type: str
+      master:
+        description: Name of master device (C(None) if no master).
+        type: str
 """
 
 
@@ -283,6 +318,8 @@ class Link(object):
         'promisc': lambda is_prms: ['promisc', ['off', 'on'][is_prms]],
         'txqueuelen': lambda qlen: ['txqueuelen', str(qlen)],
         'state': lambda state: [state],
+        'master': lambda master: ['master', master],
+        'nomaster': lambda nomaster: ['nomaster'] if nomaster else [],
     }
 
     def __init__(self, module):
@@ -366,6 +403,7 @@ class Link(object):
             'promisc': promisc,
             'txqueuelen': int(iface['qlen']),
             'state': ['down', 'up'][int(is_up)],
+            'master': iface.get('master', None)
         }
 
     def _get_interfaces_info(self, namespace, not_found_is_ok=False):
@@ -383,7 +421,7 @@ class Link(object):
     def _is_changes_needed_for_interface(self, iface):
         attr_list = [  # address and broadcast are handled separately
             'alias', 'arp', 'group', 'mtu', 'multicast',
-            'promisc', 'txqueuelen', 'state'
+            'promisc', 'txqueuelen', 'state', 'master'
         ]
         for attr in attr_list:
             if self.knobs[attr] and self.knobs[attr] != iface[attr]:
@@ -506,6 +544,8 @@ def main():
             'broadcast': {},
             'netns': {},
             'alias': {},
+            'master': {'type': 'str'},
+            'nomaster': {'type': 'bool'},
             'group': {}
         },
         supports_check_mode=True,
