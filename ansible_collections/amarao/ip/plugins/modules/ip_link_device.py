@@ -147,7 +147,6 @@ options:
 
     vlan_options:
         type: dict
-        aliases: [type_options]
         description:
             - Options, specific for I(type)=C(vlan)
             - Should not be used for any other type
@@ -209,7 +208,6 @@ options:
 
     vxlan_options:
         type: dict
-        aliases: [type_options]
         description:
             - Options, specific for I(type)=C(vxlan)
             - Should not be used for any other type
@@ -351,7 +349,6 @@ options:
 
     veth_options:
         type: dict
-        aliases: [type_options]
         description:
             - Options, specific for I(type)=C(veth).
             - Should not be used for any other type.
@@ -364,7 +361,6 @@ options:
 
     gre_options:
         type: dict
-        aliases: [type_options]
         description:
             - Options, specific for I(type)=C(gre).
             - Should not be used for any other type.
@@ -470,7 +466,6 @@ options:
 
     gretap_options:
         type: dict
-        aliases: [type_options]
         description:
             - Options, specific for I(type)=C(gretap).
             - Should not be used for any other type.
@@ -604,25 +599,11 @@ EXAMPLES = """
         dev: eth0
         key: 42
 
-- name: Use type_options for misc types inside loop.
-    name: '{{ item.name }}'
-    type: '{{ item.type }}'
-    type_options: '{{ item.options}}'
-  loop:
-    - name: gre42
-      type: gre
-      options:
-        remote: 192.168.1.1
-        key: 42
-    - name: veth3
-      type: veth
-      options:
-        peer_name: veth4
-
 - name: Create dummy interface
-    name: dummy3
-    type: dummy
-    state: present
+  ip_link_device:
+      name: dummy3
+      type: dummy
+      state: present
 """
 
 RETURN = """
@@ -777,8 +758,7 @@ class LinkDevice(object):
             self.module.fail_json(msg=to_text('State=present requires type'))
         if self.state == 'present':
             self.type_options = (
-                module.params.get(self.type + '_options') or
-                module.params.get('type_options') or
+                module.params.get(self.type + '_options'),
                 {}
             )
             self._validate_type_options()
@@ -910,7 +890,6 @@ def main():
             'vxlan_options': {'type': 'dict'},
             'gre_options': {'type': 'dict'},
             'gretap_options': {'type': 'dict'},
-            'type_options': {'type': 'dict'},
 
         },
         supports_check_mode=True,
@@ -919,7 +898,7 @@ def main():
             ['name', 'group_id'],
             [
                 'vlan_options', 'vxlan_options', 'gre_options',
-                'gretap_options', 'type_options'
+                'gretap_options'
             ]
         ],
         required_one_of=[['name', 'group_id']],
