@@ -1,14 +1,17 @@
-- become: true
+- name: Install iproute2 if missing
+  become: true
   block:
     - name: Check if ip binary is present
       command: ip -V
       changed_when: false
       failed_when: false
       register: ip_ver
-    - name: Ensure iproute2 is present
-      become: true
+    - name: Install iproute2 on debian-based distro
+      shell: apt update && apt install -y iproute2
+      when: ansible_os_family == 'Debian' and ip_ver.rc != 0
+    - name: Install iproute2 on non-debian distro
       package: name=iproute2 state=present
-      when: ip_ver.rc != 0  # faster this way, as we skip python-apt and apt update
+      when: ansible_os_family != 'Debian' and ip_ver.rc != 0
 
 
     # TEST1: Check if we can set options for veth interface
@@ -299,5 +302,3 @@
       always:
         - name: TEST4, cleanup interface
           command: ip link delete group 42
-
-  when: ansible_virtualization_type | default('') != 'docker'

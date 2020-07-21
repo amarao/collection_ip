@@ -31,7 +31,7 @@ jobs:
     - name: Unit tests with dependencies
       run: ansible-test units --requirements --python 3.8
       working-directory: ansible_collections/amarao/ip
-    - name: Integration tests
+    - name: Integration tests with dependencies
       run: ansible-test integration --requirements --python 3.8 --local --allow-root
       working-directory: ansible_collections/amarao/ip
     - name: Cleanup
