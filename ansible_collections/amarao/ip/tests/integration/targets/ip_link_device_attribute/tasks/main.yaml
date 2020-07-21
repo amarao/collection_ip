@@ -303,6 +303,19 @@
         - name: TEST4, cleanup interface
           command: ip link delete group 42
 
+    # TEST5: Support for group operations
+    # stages:
+    # - create bridge
+    # - create dummy interface
+    # - run the module in check_mode
+    # - validate output
+    # - run the module for real
+    # - validate output
+    # - run module second time
+    # - check of idempotency
+    # - run the module with nomaster option
+    # - validate output
+    # - delete interfaces
     - name: TEST5 - work with master/nomaster
       become: true
       block:
