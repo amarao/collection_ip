@@ -25,17 +25,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Sanity tests with dependencies
       run: ansible-test sanity --requirements --python 3.8
       working-directory: ansible_collections/amarao/ip
     - name: Unit tests with dependencies
       run: ansible-test units --requirements --python 3.8
+      working-directory: ansible_collections/amarao/ip
+    - name: Integration tests
+      run: ansible-test integration --requirements --python 3.8 --local --allow-root
       working-directory: ansible_collections/amarao/ip
     - name: Cleanup
       run: rm -r ansible_collections/amarao/ip/tests/output
