@@ -35,6 +35,9 @@ jobs:
       working-directory: ansible_collections/amarao/ip
     - name: Cleanup
       run: rm -fr ansible_collections/amarao/ip/tests/output ansible_collections/amarao/ip/.pytest_cache
+    - name: Try-build by ansible-galaxy
+      run: ansible-galaxy collection build
+      working-directory: ansible_collections/amarao/ip
 
   build:
     runs-on: ubuntu-latest
@@ -58,8 +61,13 @@ jobs:
       working-directory: ansible_collections/amarao/ip
     - name: Exctract version
       id: version
-      run: echo "::set-output name=version::$(cat galaxy.yml |grep ^version|awk '{print $2}')"
+      run: |
+        version=$(cat galaxy.yml |grep ^version|awk '{print $2}')
+        echo "::set-output name=version::$version"
+        echo '::set-env name=COLLECTION_VERSION::$version'
       working-directory: ansible_collections/amarao/ip
+    - name: Upload collection artifact
+      run: echo $COLLECTION_VERSION
 
   publish:
     runs-on: ubuntu-latest
