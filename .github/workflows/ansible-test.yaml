@@ -1,11 +1,14 @@
 ---
 name: Ansible collection
 
-on:
+'on':
   push:
-    branches: [ master ]
+    branches:
+      - master
+    tags:
   pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
   test:
@@ -13,59 +16,81 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Sanity tests with dependencies
-      run: ansible-test sanity --requirements --python 3.8
-      working-directory: ansible_collections/amarao/ip
-    - name: Unit tests with dependencies
-      run: ansible-test units --requirements --python 3.8
-      working-directory: ansible_collections/amarao/ip
-    - name: Integration tests with dependencies
-      run: ansible-test integration --requirements --python 3.8 --local --allow-root
-      working-directory: ansible_collections/amarao/ip
-    - name: Cleanup
-      run: rm -fr ansible_collections/amarao/ip/tests/output ansible_collections/amarao/ip/.pytest_cache
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Sanity tests with dependencies
+        run: ansible-test sanity --requirements --python 3.8
+        working-directory: ansible_collections/amarao/ip
+      - name: Unit tests with dependencies
+        run: ansible-test units --requirements --python 3.8
+        working-directory: ansible_collections/amarao/ip
+      - name: Integration tests with dependencies
+        run: ansible-test integration --requirements --python 3.8 --local --allow-root
+        working-directory: ansible_collections/amarao/ip
+      - name: Cleanup
+        run: rm -fr ansible_collections/amarao/ip/tests/output ansible_collections/amarao/ip/.pytest_cache
+      - name: Try-build by ansible-galaxy
+        run: ansible-galaxy collection build
+        working-directory: ansible_collections/amarao/ip
 
   build:
     runs-on: ubuntu-latest
     needs: test
     outputs:
-        version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.version.outputs.version }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Build collection
-      run: ansible-galaxy collection build
-      working-directory: ansible_collections/amarao/ip
-    - name: Exctract version
-      id: version
-      run: echo "::set-output name=version::$(cat galaxy.yml |grep ^version|awk '{print $2}')"
-      working-directory: ansible_collections/amarao/ip
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Build collection
+        run: ansible-galaxy collection build
+        working-directory: ansible_collections/amarao/ip
+      - name: Exctract version
+        id: version
+        run: |
+          version=$(cat galaxy.yml |grep ^version|awk '{print $2}')
+          echo "::set-output name=version::$version"
+          echo "::set-env name=COLLECTION_VERSION::$version"
+        working-directory: ansible_collections/amarao/ip
+      - name: Print artifact info
+        run: |
+          ls -la amarao-ip-$COLLECTION_VERSION.tar.gz
+          sha512sum amarao-ip-$COLLECTION_VERSION.tar.gz
+        working-directory: ansible_collections/amarao/ip
+      - name: Save artifact
+        if: ${{ github.ref == env.version }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: collection
+          path: ansible_collections/amarao/ip/amarao-ip-$COLLECTION_VERSION.tar.gz
 
   publish:
+    if: ${{ needs.build.outputs.version == github.ref }}
     runs-on: ubuntu-latest
     needs: build
     steps:
-     - run: echo "__${{needs.build.outputs.version}}@@"
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: collection
+      - run: echo ansible-galaxy collection upload amarao-ip-${{needs.build.outputs.version }}.tar.gz --api-key=no
 #    - name: Upload artifact
 #      uses: actions/upload-artifact@v1
 #      with:
