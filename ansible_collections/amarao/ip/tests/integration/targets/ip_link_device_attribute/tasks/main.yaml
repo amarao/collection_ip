@@ -303,7 +303,7 @@
         - name: TEST4, cleanup interface
           command: ip link delete group 42
 
-    # TEST5: Support for group operations
+    # TEST5: Support for master/nomaster options
     # stages:
     # - create bridge
     # - create dummy interface
@@ -330,10 +330,15 @@
               master: bridge-example
               state: up
           register: res
+          failed_when: res.changed == false
+        - name: TEST5, get interfaces status after check_mode
+          ip_link_device_attribute:
+              name: dummy-master
+          register: res
         - name: TEST5, assert results for check_mode
           assert:
             that:
-              - res.changed == true
+              - res.changed == false
               - res.interfaces|length == 1
               - res.interfaces[0].state == 'down'
               - res.interfaces[0].master is none
