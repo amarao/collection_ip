@@ -302,3 +302,85 @@
       always:
         - name: TEST4, cleanup interface
           command: ip link delete group 42
+
+    # TEST5: Support for master/nomaster options
+    # stages:
+    # - create bridge
+    # - create dummy interface
+    # - run the module in check_mode
+    # - validate output
+    # - run the module for real
+    # - validate output
+    # - run module second time
+    # - check of idempotency
+    # - run the module with nomaster option
+    # - validate output
+    # - delete interfaces
+    - name: TEST5 - work with master/nomaster
+      become: true
+      block:
+        - name: TEST5, preparation, create linux bridge
+          command: ip link add dev bridge-example type bridge
+        - name: TEST5, create dummy interface for test
+          command: ip link add dev dummy-master type dummy
+        - name: TEST5, run module with check_mode
+          check_mode: true
+          ip_link_device_attribute:
+              name: dummy-master
+              master: bridge-example
+              state: up
+          register: res
+          failed_when: res.changed == false
+        - name: TEST5, get interfaces status after check_mode
+          ip_link_device_attribute:
+              name: dummy-master
+          register: res
+        - name: TEST5, assert results for check_mode
+          assert:
+            that:
+              - res.changed == false
+              - res.interfaces|length == 1
+              - res.interfaces[0].state == 'down'
+              - res.interfaces[0].master is none
+        - name: TEST5, run module
+          ip_link_device_attribute:
+              name: dummy-master
+              master: bridge-example
+              state: up
+          register: res
+        - name: TEST5, assert results
+          assert:
+            that:
+              - res.changed == true
+              - res.interfaces|length == 1
+              - res.interfaces[0].state == 'up'
+              - res.interfaces[0].master == 'bridge-example'
+        - name: TEST5, run module for the second time
+          ip_link_device_attribute:
+              name: dummy-master
+              master: bridge-example
+              state: up
+          register: res
+        - name: TEST5, assert idempotency
+          assert:
+            that:
+              - res.changed == false
+              - res.interfaces|length == 1
+              - res.interfaces[0].master == 'bridge-example'
+        - name: TEST5, run module with nomaster
+          ip_link_device_attribute:
+              name: dummy-master
+              nomaster: true
+          register: res
+        - name: TEST5, assert results with nomaster
+          assert:
+            that:
+              - res.changed == true
+              - res.interfaces|length == 1
+              - res.interfaces[0].master is none
+      always:
+        - name: TEST5, cleanup interfaces
+          command: ip link delete {{ item }}
+          loop:
+            - dummy-master
+            - bridge-example
