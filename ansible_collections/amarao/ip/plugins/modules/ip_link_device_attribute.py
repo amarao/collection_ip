@@ -9,6 +9,10 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
+# note: this module supports namespaces, groups of interfaces (group_id), etc.
+# It's more complicated than just simple
+# 'apply this ip link command to that interface'
+
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
@@ -439,6 +443,8 @@ class Link(object):
                 self.module.fail_json(msg=to_text(
                     'Interace %s can not have MAC address'
                 ) % (iface['name']))
+            return True
+        if self.knobs['nomaster'] and iface['master']:
             return True
         return False
 

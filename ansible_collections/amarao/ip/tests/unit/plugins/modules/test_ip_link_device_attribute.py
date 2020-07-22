@@ -8,7 +8,7 @@ __metaclass__ = type
 
 import pytest
 import mock
-from ansible_collections.amarao.ip.plugins.modules import ip_link_device_attribute
+from ansible_collections.amarao.ip.plugins.modules import ip_link_device_attribute  # noqa
 
 IF1 = '2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP mode DEFAULT group default qlen 1000\\    link/ether 00:23:54:84:d1:7a brd ff:ff:ff:ff:ff:ff link-netnsid 0'  # noqa
 IF1_data = {
@@ -179,7 +179,8 @@ def test_is_changes_needed_for_interface_no_changes(eth0, module):
     'multicast',
     'promisc',
     'txqueuelen',
-    'state'
+    'state',
+    'master',
 ])
 def test_is_changes_needed_for_interface_one_param(eth0, module, change_attr):
     module.params['name'] = 'eth0'
@@ -197,6 +198,30 @@ def test_is_changes_needed_for_interface_no_l2(eth0, module, change_attr):
     link = ip_link_device_attribute.Link(module)
     with pytest.raises(FailJsonException):
         link._is_changes_needed_for_interface(eth0)
+
+
+def test_is_changes_needed_for_nomaster(eth0, module):
+    module.params['name'] = 'eth0'
+    module.params['nomaster'] = True
+    eth0["master"] = 'test'
+    link = ip_link_device_attribute.Link(module)
+    assert link._is_changes_needed_for_interface(eth0) is True
+
+
+def test_is_changes_needed_for_nomaster_without_master(eth0, module):
+    module.params['name'] = 'eth0'
+    module.params['nomaster'] = True
+    eth0["master"] = None
+    link = ip_link_device_attribute.Link(module)
+    assert link._is_changes_needed_for_interface(eth0) is False
+
+
+def test_is_changes_needed_for_nomaster_false(eth0, module):
+    module.params['name'] = 'eth0'
+    module.params['nomaster'] = False
+    eth0["master"] = 'test'
+    link = ip_link_device_attribute.Link(module)
+    assert link._is_changes_needed_for_interface(eth0) is False
 
 
 @pytest.mark.parametrize('knob, knob_value, command', [
@@ -241,6 +266,32 @@ def test_apply_change_uses_namespace(Zlink, module):
     link._apply_changes()
     command = 'ip link set dev eth0 mtu 1500'
     Zlink._exec.assert_called_with('test', command.split())
+
+
+def test_apply_change_master(Zlink, module):
+    module.params['name'] = 'eth0'
+    module.params['master'] = 'test'
+    link = Zlink(module)
+    link._apply_changes()
+    command = 'ip link set dev eth0 master test'
+    Zlink._exec.assert_called_once_with(None, command.split())
+
+
+def test_apply_change_nomaster_true(Zlink, module):
+    module.params['name'] = 'eth0'
+    module.params['nomaster'] = True
+    link = Zlink(module)
+    link._apply_changes()
+    command = 'ip link set dev eth0 nomaster'
+    Zlink._exec.assert_called_once_with(None, command.split())
+
+
+def test_apply_change_nomaster_false(Zlink, module):
+    module.params['name'] = 'eth0'
+    module.params['nomaster'] = False
+    link = Zlink(module)
+    link._apply_changes()
+    assert Zlink._exec.called is True
 
 
 @pytest.mark.parametrize('input, output', [
