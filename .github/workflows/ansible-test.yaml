@@ -6,6 +6,7 @@ name: Ansible collection
     branches:
       - master
     tags:
+      - '*'
   pull_request:
     branches:
       - master
