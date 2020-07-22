@@ -17,13 +17,13 @@ readme: README.md
 # A list of the collection's content authors. Can be just the name or in the format 'Full Name <email> (url)
 # @nicks:irc/im.site#channel'
 authors:
-- your George Shuklin <george.shuklin@gmail.com>
-
+- George Shuklin <george.shuklin@gmail.com>
+- Ivan Semenov <van@semenov.dev>
 
 ### OPTIONAL but strongly recommended
 
 # A short summary description of the collection
-description: Collection of wrappers for iproute2 utility (/bin/ip) for managing networking devices and routes.
+description: Collection of wrappers for iproute2 utility (/bin/ip) for managing network devices, addreses and routes.
 
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
