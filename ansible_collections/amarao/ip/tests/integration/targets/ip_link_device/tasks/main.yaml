@@ -7,7 +7,7 @@
       failed_when: false
       register: ip_ver
     - name: Install iproute2 on debian-based distro
-      shell: apt update && apt install -y iproute2
+      shell: apt update && apt install -y iproute2 kmod
       when: ansible_os_family == 'Debian' and ip_ver.rc != 0
     - name: Install iproute2 on non-debian distro
       package: name=iproute2 state=present

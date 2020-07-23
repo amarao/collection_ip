@@ -65,7 +65,7 @@ jobs:
       - name: Build collection
         run: ansible-galaxy collection build
         working-directory: ansible_collections/amarao/ip
-      - name: Exctract version
+      - name: Extract version
         id: version
         run: |
           version=$(cat galaxy.yml |grep ^version|awk '{print $2}')
