@@ -223,6 +223,8 @@ options:
                 type: int
                 description:
                     - VNI (VXLAN Segment Identifier) to use
+                    - Some iproute2 versions reject to create vxlan device
+                      without this option.
             dev:
                 type: str
                 description:

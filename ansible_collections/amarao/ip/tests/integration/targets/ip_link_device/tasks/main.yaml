@@ -343,6 +343,8 @@
       ip_link_device:
         device: vxlan5  # check if 'device' alias works
         type: vxlan
+        vxlan_options:
+          id: 99
         state: present
   always:
     - name: TEST5, cleanup
