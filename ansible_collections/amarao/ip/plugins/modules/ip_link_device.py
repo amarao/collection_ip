@@ -758,7 +758,7 @@ class LinkDevice(object):
             self.module.fail_json(msg=to_text('State=present requires type'))
         if self.state == 'present':
             self.type_options = (
-                module.params.get(self.type + '_options'),
+                module.params.get(self.type + '_options') or
                 {}
             )
             self._validate_type_options()
@@ -898,7 +898,7 @@ def main():
             ['name', 'group_id'],
             [
                 'vlan_options', 'vxlan_options', 'gre_options',
-                'gretap_options'
+                'gretap_options', 'veth_options'
             ]
         ],
         required_one_of=[['name', 'group_id']],
