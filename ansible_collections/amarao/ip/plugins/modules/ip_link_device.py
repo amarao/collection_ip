@@ -124,25 +124,29 @@ options:
     numtxqueues:
         type: int
         description:
-            - Number of transmit queues for a new interface
-            - Default value is used by the kernel if omitted
+            - Number of transmit queues for a new interface.
+            - Default value is used by the kernel if omitted.
 
     numrxqueues:
         type: int
         description:
-            - Number of recieve queues for a new interface
-            - Default value is used by the kernel if omitted
+            - Number of recieve queues for a new interface.
+            - Default value is used by the kernel if omitted.
 
     gso_max_size:
         type: int
         description:
             - Number of bytes for GSO (Generic Segment Offload)
-            - Default value is used by the kernel if omitted
+            - Poorly tested
+            - Requires new version of the kernel and iproute2 package.
+            - Default value is used by the kernel if omitted.
 
     gso_max_segs:
         type: int
         description:
             - Number of segments for GSO (Generic Segment Offload)
+            - Poorly tested
+            - Requires new version of the kernel and iproute2 package.
             - Default value is used by the kernel if omitted
 
     vlan_options:
@@ -190,7 +194,10 @@ options:
                 type: bool
                 description:
                     - Should VLAN device link state tracks the state of
-                      bridge ports that are members of the VLAN
+                      bridge ports that are members of the VLAN.
+                    - Poorly tested.
+                    - Requires new version of the kernel and iproute2 package.
+
 
             ingress_qos_map:
                 type: list

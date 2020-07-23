@@ -174,7 +174,6 @@
                 gvrp: true
                 mvrp: true
                 loose_binding: true
-                bridge_binding: true
                 ingress_qos_map:
                     - '1:2'
                     - '3:1'
@@ -199,7 +198,6 @@
               - "'GVRP' in command_res.stdout"
               - "'MVRP' in command_res.stdout"
               - "'LOOSE_BINDING' in command_res.stdout"
-              - "'BRIDGE_BINDING' in command_res.stdout"
               - "'ingress-qos-map { 1:2 3:1 }' in command_res.stdout"
               - "'egress-qos-map { 1:2 2:3 }' in command_res.stdout"
 
@@ -314,8 +312,8 @@
           assert:
             that:
               - "'gretap99@lo:' in command_res.stdout"
-              - "'link/gretap 127.0.0.1' in command_res.stdout"
-              - "'peer 127.0.0.2' in command_res.stdout"
+              - "'link/gretap 127.0.0.1' in command_res.stdout or 'local 127.0.0.1' in command_res.stdout"
+              - "'peer 127.0.0.2' in command_res.stdout or 'remote 127.0.0.2' in command_res.stdout"
               - "'dev lo' in command_res.stdout"
               - "'ttl 33' in command_res.stdout"
               - "'nopmtudisc' in command_res.stdout"
