@@ -60,8 +60,6 @@
             index: 999
             numtxqueues: 3  # can't test
             numrxqueues: 4  # can't test
-            gso_max_size: 66  # can't test
-            gso_max_segs: 77  # can't test
           register: module_res
         - name: TEST1, check module results
           assert:
@@ -80,8 +78,6 @@
               - "'veth99@veth100' in command_res.stdout"  # peer name
               - "'qlen 2' in command_res.stdout"
               - "'999:' in command_res.stdout"
-              - "'gso_max_size 66' in command_res.stdout"
-              - "'gso_max_segs 77' in command_res.stdout"
               - "'numtxqueues 3' in command_res.stdout"
               - "'numrxqueues 4' in command_res.stdout"
 
