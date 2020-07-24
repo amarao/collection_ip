@@ -229,7 +229,8 @@ options:
                 type: str
                 description:
                     - Name of device to use for tunnel endpoint communication
-                    - Do not confuse with I(device), which is alias for I(name).
+                    - Do not confuse with I(device), which is alias for
+                      I(name).
 
             group:
                 type: str
