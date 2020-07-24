@@ -394,7 +394,6 @@
           mcast_query_use_ifaddr: true
           mcast_querier: true
           mcast_querier_interval: 6
-          mcast_hash_elasticity: 7
           mcast_hash_max: 1024
           mcast_last_member_count: 8
           mcast_last_member_interval: 9
@@ -436,7 +435,6 @@
           - "'group_fwd_mask 0x4000' in command_res.stdout"
           - "'mcast_snooping 1' in command_res.stdout"
           - "'mcast_hash_max 1024' in command_res.stdout"
-          - "'mcast_hash_elasticity 7' in command_res.stdout"
           - "'mcast_last_member_count 8' in command_res.stdout"
           - "'mcast_startup_query_count 10' in command_res.stdout"
           - "'nf_call_iptables 1' in command_res.stdout"
