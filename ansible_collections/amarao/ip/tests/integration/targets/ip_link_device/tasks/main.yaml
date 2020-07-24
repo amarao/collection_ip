@@ -355,7 +355,7 @@
   when: ansible_virtualization_type | default('') != 'docker'
 
 # TEST6 create dummy interface
-- name: TEST5 - create and delete VXLAN
+- name: TEST6 - create and delete dummy
   become: true
   block:
     - name: TEST6, create dummy interface
@@ -364,8 +364,35 @@
         type: dummy
         state: present
   always:
-    - name: TEST5, cleanup
+    - name: TEST6, cleanup
       command: ip link delte dummy3
       failed_when: false
 
-  when: ansible_virtualization_type | default('') != 'docker'
+# TEST7 create bridge
+- name: TEST7 - create and delete bridge
+  become: true
+  block:
+    - name: TEST7, create bridge interface
+      ip_link_device:
+        device: br0
+        type: bridge
+        state: present
+    - name: TEST7, assert module output
+      assert:
+        that:
+          - module_res.changed
+    - name: TEST7, get results
+      command: ip -o -d link show br0
+      register: command_res
+    - name: TEST7, assert results
+      assert:
+        that:
+          - "'br0' in command_res.stdout"
+          - "'bridge' in command_res.stdout"
+          - "'bridge_id' in command_res.stdout"
+          - "'vlan_protocol 802.1Q' in command_res.stdout"
+          - "'stp_state 0' in command_res.stdout"
+  always:
+    - name: TEST7, cleanup
+      command: ip link delte br0
+      failed_when: false
