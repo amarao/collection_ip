@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install yamllint
-        run: apt install yamllint
+        run: sudo apt install yamllint
       - name: Lint
         run: yamllint .
 
@@ -70,6 +70,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Remove tests from final distribution
+        run: rm -r tests/
+        working-directory: ansible_collections/amarao/ip
       - name: Build collection
         run: ansible-galaxy collection build
         working-directory: ansible_collections/amarao/ip
