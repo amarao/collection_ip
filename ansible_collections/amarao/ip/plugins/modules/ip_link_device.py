@@ -599,7 +599,7 @@ options:
                     - MAC address of the multicast group for this bridge
                       to use for STP.
                     - Address must be link-local address in a standard form
-                      (01:80:C2:00:00:01).
+                      (01:80:C2:00:00:0X, X in [0, 4..f]).
 
             forward_delay:
                 type: int
@@ -617,7 +617,8 @@ options:
                     - Delay between HELLO packets in STP when it's not root
                       or designated bridge.
                     - Used only if STP is enabled.
-                    - Valid values are from 1 to 10.
+                    - Valid values are from 1 to 10 according to man page.
+                    - Tests shows value should be over 100.
 
             max_age:
                 type: int
@@ -625,7 +626,8 @@ options:
                 description:
                     - HELLO packet timeout.
                     - Used only if STP is enabled.
-                    - Valid values are from 6 to 40.
+                    - Valid values are from 6 to 40 according to man page.
+                    - Tests shows value should be over 600.
 
             stp:
                 type: bool
@@ -677,6 +679,8 @@ options:
                     - Enable per-VLAN per-port accounting.
                     - Can be changed only when there are no port VLANs
                       configured.
+                    - Poorly tested.
+                    - Requiers new kernel.
 
             mcast_snooping:
                 type: bool
@@ -994,10 +998,10 @@ TYPE_COMMANDS = {
     'bridge': {
         'ageing_time': lambda time: ['ageing_time', str(time)],
         'group_fwd_mask': lambda mask: ['group_fwd_mask', str(mask)],
-        'group_address': lambda addr: ['group_address', addr],
+        'group_address': lambda addr: ['group_address', str(addr)],
         'forward_delay': lambda delay: ['forward_delay', str(delay)],
         'hello_time': lambda time: ['hello_time', str(time)],
-        'max_age': lambda age: ['max_age', age],
+        'max_age': lambda age: ['max_age', str(age)],
         'stp': lambda state: ['stp_state', str(int(state))],
         'priority': lambda pri: ['priority', str(pri)],
         'vlan_filtering': lambda flag: ['vlan_filtering', str(int(flag))],
