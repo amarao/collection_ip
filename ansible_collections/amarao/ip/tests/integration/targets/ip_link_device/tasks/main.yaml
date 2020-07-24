@@ -376,6 +376,39 @@
       ip_link_device:
         device: br0
         type: bridge
+        bridge_options:
+          ageing_time: 42
+          group_fwd_mask: 16384
+          group_address: 01:80:C2:00:00:0F
+          forward_delay: 2
+          hello_time: 100
+          max_age: 600
+          stp: true
+          priority: 999
+          vlan_filtering: true
+          vlan_protocol: 802.1ad
+          vlan_default_pvid: 998
+          vlan_stats: true
+          mcast_snooping: true
+          mcast_router: 2
+          mcast_query_use_ifaddr: true
+          mcast_querier: true
+          mcast_querier_interval: 6
+          mcast_hash_elasticity: 7
+          mcast_hash_max: 1024
+          mcast_last_member_count: 8
+          mcast_last_member_interval: 9
+          mcast_startup_query_count: 10
+          mcast_startup_query_interval: 11
+          mcast_query_interval: 12
+          mcast_query_response_interval: 13
+          mcast_membership_interval: 14
+          mcast_stats: true
+          mcast_igmp_version: 3
+          mcast_mld_version: 1
+          nf_call_iptables: true
+          nf_call_ip6tables: true
+          nf_call_arptables: true
         state: present
     - name: TEST7, assert module output
       assert:
@@ -389,9 +422,27 @@
         that:
           - "'br0' in command_res.stdout"
           - "'bridge' in command_res.stdout"
-          - "'bridge_id' in command_res.stdout"
-          - "'vlan_protocol 802.1Q' in command_res.stdout"
-          - "'stp_state 0' in command_res.stdout"
+          - "'bridge_id 03e7.0:0:0:0:0:0' in command_res.stdout"
+          - "'vlan_protocol 802.1ad' in command_res.stdout"
+          - "'stp_state 1' in command_res.stdout"
+          - "'forward_delay 200' in command_res.stdout"
+          - "'hello_time 100' in command_res.stdout"
+          - "'max_age 600' in command_res.stdout"
+          - "'ageing_time 42' in command_res.stdout"
+          - "' priority 999' in command_res.stdout"
+          - "'vlan_filtering 1' in command_res.stdout"
+          - "'vlan_default_pvid 998' in command_res.stdout"
+          - "'vlan_stats_enabled 1' in command_res.stdout"
+          - "'group_fwd_mask 0x4000' in command_res.stdout"
+          - "'mcast_snooping 1' in command_res.stdout"
+          - "'mcast_hash_max 1024' in command_res.stdout"
+          - "'mcast_hash_elasticity 7' in command_res.stdout"
+          - "'mcast_last_member_count 8' in command_res.stdout"
+          - "'mcast_startup_query_count 10' in command_res.stdout"
+          - "'nf_call_iptables 1' in command_res.stdout"
+          - "'mcast_stats_enabled 1' in command_res.stdout"
+          - "'mcast_igmp_version 3' in command_res.stdout"
+          - "'mcast_mld_version 1' in command_res.stdout"
   always:
     - name: TEST7, cleanup
       command: ip link delte br0
