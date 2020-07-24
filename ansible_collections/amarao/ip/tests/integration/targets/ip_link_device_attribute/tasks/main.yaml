@@ -1,3 +1,4 @@
+---
 - name: Install iproute2 if missing
   become: true
   block:
@@ -31,95 +32,95 @@
         - name: TEST1, check_mode support for normal attributes
           check_mode: true
           ip_link_device_attribute:
-              name: vethN
-              state: up
-              mtu: '{{ mock_mtu }}'
-              address: '{{ mock_mac }}'
-              broadcast: '{{ mock_broadcast }}'
-              alias: vethalias
-              promisc: on
-              txqueuelen: '{{ mock_txqlen }}'
-              arp: off
-              group: '{{ mock_group }}'
+            name: vethN
+            state: up
+            mtu: '{{ mock_mtu }}'
+            address: '{{ mock_mac }}'
+            broadcast: '{{ mock_broadcast }}'
+            alias: vethalias
+            promisc: true
+            txqueuelen: '{{ mock_txqlen }}'
+            arp: false
+            group: '{{ mock_group }}'
           register: res
         - name: TEST1, validate module output after check_mode
           assert:
-              that:
-                  - res.interfaces|length == 1
-                  - res.interfaces[0].name == 'vethN'
-                  - res.interfaces[0].mtu == 1500
-                  - res.interfaces[0].promisc == false
-                  - res.interfaces[0].broadcast == 'ff:ff:ff:ff:ff:ff'
-                  - res.interfaces[0].state == 'down'
-                  - res.interfaces[0].group == 'default'
-                  - res.changed == true
+            that:
+              - res.interfaces|length == 1
+              - res.interfaces[0].name == 'vethN'
+              - res.interfaces[0].mtu == 1500
+              - res.interfaces[0].promisc == false
+              - res.interfaces[0].broadcast == 'ff:ff:ff:ff:ff:ff'
+              - res.interfaces[0].state == 'down'
+              - res.interfaces[0].group == 'default'
+              - res.changed == true
         - name: TEST1, get actual values from OS for interface
           command: ip link show dev vethN
           register: test1_res
           changed_when: false
         - name: TEST1 - validate OS result
           assert:
-              that:
-                 - ('UP' not in test1_res.stdout)
-                 - ('mtu 1500' in test1_res.stdout)
-                 - ('alias vethalias' not in test1_res.stdout)
-                 - ('PROMISC' not in test1_res.stdout)
-                 - ('NOARP' not in test1_res.stdout)
-                 - ('brd ff:ff:ff:ff:ff:ff' in test1_res.stdout)
-                 - ('group default' in test1_res.stdout)
+            that:
+              - ('UP' not in test1_res.stdout)
+              - ('mtu 1500' in test1_res.stdout)
+              - ('alias vethalias' not in test1_res.stdout)
+              - ('PROMISC' not in test1_res.stdout)
+              - ('NOARP' not in test1_res.stdout)
+              - ('brd ff:ff:ff:ff:ff:ff' in test1_res.stdout)
+              - ('group default' in test1_res.stdout)
         - name: TEST1, change attributes
           ip_link_device_attribute:
-              name: vethN
-              state: up
-              mtu: '{{ mock_mtu }}'
-              address: '{{ mock_mac }}'
-              broadcast: '{{ mock_broadcast }}'
-              alias: vethalias
-              promisc: on
-              txqueuelen: '{{ mock_txqlen }}'
-              arp: off
-              group: '{{ mock_group }}'
+            name: vethN
+            state: up
+            mtu: '{{ mock_mtu }}'
+            address: '{{ mock_mac }}'
+            broadcast: '{{ mock_broadcast }}'
+            alias: vethalias
+            promisc: false
+            txqueuelen: '{{ mock_txqlen }}'
+            arp: false
+            group: '{{ mock_group }}'
           register: res
         - name: TEST1 - validate module output after change
           assert:
-              that:
-                  - res.changed == true
-                  - res.interfaces|length == 1
-                  - res.interfaces[0].name == 'vethN'
-                  - res.interfaces[0].alias == 'vethalias'
-                  - res.interfaces[0].txqueuelen == mock_txqlen
-                  - res.interfaces[0].promisc == true
-                  - res.interfaces[0].broadcast == mock_broadcast
-                  - res.interfaces[0].state == 'up'
-                  - res.interfaces[0].group == mock_group
+            that:
+              - res.changed == true
+              - res.interfaces|length == 1
+              - res.interfaces[0].name == 'vethN'
+              - res.interfaces[0].alias == 'vethalias'
+              - res.interfaces[0].txqueuelen == mock_txqlen
+              - res.interfaces[0].promisc == true
+              - res.interfaces[0].broadcast == mock_broadcast
+              - res.interfaces[0].state == 'up'
+              - res.interfaces[0].group == mock_group
         - name: TEST1, get actual values from OS for interface
           command: ip link show dev vethN
           register: test1_res
           changed_when: false
         - name: TEST1, validate OS result
           assert:
-              that:
-                 - ('UP' in test1_res.stdout)
-                 - ('mtu '+ mock_mtu|string in test1_res.stdout)
-                 - ('alias vethalias' in test1_res.stdout)
-                 - ('PROMISC' in test1_res.stdout)
-                 - ('NOARP' in test1_res.stdout)
-                 - ('qlen ' + mock_txqlen|string in test1_res.stdout)
-                 - ('ether ' +  mock_mac in test1_res.stdout)
-                 - ('brd ' + mock_broadcast in test1_res.stdout)
-                 - ('group ' + mock_group in test1_res.stdout)
+            that:
+              - ('UP' in test1_res.stdout)
+              - ('mtu '+ mock_mtu|string in test1_res.stdout)
+              - ('alias vethalias' in test1_res.stdout)
+              - ('PROMISC' in test1_res.stdout)
+              - ('NOARP' in test1_res.stdout)
+              - ('qlen ' + mock_txqlen|string in test1_res.stdout)
+              - ('ether ' +  mock_mac in test1_res.stdout)
+              - ('brd ' + mock_broadcast in test1_res.stdout)
+              - ('group ' + mock_group in test1_res.stdout)
         - name: TEST1, set attrubutes  second time
           ip_link_device_attribute:
-              name: vethN
-              state: up
-              mtu: '{{ mock_mtu }}'
-              address: '{{ mock_mac }}'
-              broadcast: '{{ mock_broadcast }}'
-              alias: vethalias
-              promisc: on
-              txqueuelen: '{{ mock_txqlen }}'
-              arp: off
-              group: '{{ mock_group }}'
+            name: vethN
+            state: up
+            mtu: '{{ mock_mtu }}'
+            address: '{{ mock_mac }}'
+            broadcast: '{{ mock_broadcast }}'
+            alias: vethalias
+            promisc: false
+            txqueuelen: '{{ mock_txqlen }}'
+            arp: false
+            group: '{{ mock_group }}'
           register: res
         - name: TEST1, assert idempotency
           assert:
@@ -158,11 +159,11 @@
           register: res
         - name: TEST2, validate module output after check_mode
           assert:
-              that:
-                  - res.interfaces|length == 1
-                  - res.interfaces[0].name == 'vethM'
-                  - res.interfaces[0].state == 'down'
-                  - res.changed == true
+            that:
+              - res.interfaces|length == 1
+              - res.interfaces[0].name == 'vethM'
+              - res.interfaces[0].state == 'down'
+              - res.changed == true
         - name: TEST2, get actual values from OS for interface
           command: ip link show dev vethM
           # no need to assert. If ip failed, interface was moved
@@ -175,12 +176,12 @@
           register: res
         - name: TEST2, validate module output
           assert:
-              that:
-                  - res.interfaces|length == 1
-                  - res.interfaces[0].name == 'vethM'
-                  - res.interfaces[0].state == 'up'
-                  - res.interfaces[0].alias == 'vethalias2'
-                  - res.changed == true
+            that:
+              - res.interfaces|length == 1
+              - res.interfaces[0].name == 'vethM'
+              - res.interfaces[0].state == 'up'
+              - res.interfaces[0].alias == 'vethalias2'
+              - res.changed == true
         - name: TEST2, get actual values from OS for interface
           command: ip net exec target_namespace ip link show dev vethM
           # no need to assert. If ip failed, interface was moved
@@ -193,11 +194,11 @@
           register: res
         - name: TEST2, validate module idempotency
           assert:
-              that:
-                  - res.changed == false
-                  - res.interfaces|length == 1
-                  - res.interfaces[0].name == 'vethM'
-                  - res.interfaces[0].state == 'up'
+            that:
+              - res.changed == false
+              - res.interfaces|length == 1
+              - res.interfaces[0].name == 'vethM'
+              - res.interfaces[0].state == 'up'
         - name: TEST2, try with netns==namespace
           ip_link_device_attribute:
             name: vethM
@@ -206,13 +207,13 @@
           register: res
         - name: TEST2, validate module idempotency when netns==namespace
           assert:
-              that:
-                  - res.changed == false
+            that:
+              - res.changed == false
 
       always:
         - name: TEST2, cleanup interface
           command: ip link delete vethM
-          failed_when: false # may fail if test successful
+          failed_when: false  # may fail if test successful
         - name: TEST2, cleanup namespace
           ip_netns: name=target_namespace state=absent
 
@@ -229,8 +230,8 @@
           command: ip link add dev vcan_example type vcan
         - name: TEST3 - non-ethernet interface
           ip_link_device_attribute:
-              device: vcan_example
-              state: up
+            device: vcan_example
+            state: up
           register: res
         - name: TEST3, validate results
           assert:
@@ -262,13 +263,13 @@
         - name: TEST4, preparation, create 2 veths in group 42
           command: ip link add group 42 dev {{ item }} type veth peer name {{ item }}_peer
           loop:
-           - gr1
-           - gr2
+            - gr1
+            - gr2
         - name: TEST4, run module with check_mode
           check_mode: true
           ip_link_device_attribute:
-              group_id: '42'
-              state: up
+            group_id: '42'
+            state: up
           register: res
         - name: TEST4, assert results for check_mode
           assert:
@@ -279,8 +280,8 @@
               - res.interfaces[1].state == 'down'
         - name: TEST4, run module
           ip_link_device_attribute:
-              group_id: '42'
-              state: up
+            group_id: '42'
+            state: up
           register: res
         - name: TEST4, assert results
           assert:
@@ -291,8 +292,8 @@
               - res.interfaces[1].state == 'up'
         - name: TEST4, run module for the second time
           ip_link_device_attribute:
-              group_id: '42'
-              state: up
+            group_id: '42'
+            state: up
           register: res
         - name: TEST4, assert idempotency
           assert:
@@ -326,14 +327,14 @@
         - name: TEST5, run module with check_mode
           check_mode: true
           ip_link_device_attribute:
-              name: dummy-master
-              master: bridge-example
-              state: up
+            name: dummy-master
+            master: bridge-example
+            state: up
           register: res
           failed_when: res.changed == false
         - name: TEST5, get interfaces status after check_mode
           ip_link_device_attribute:
-              name: dummy-master
+            name: dummy-master
           register: res
         - name: TEST5, assert results for check_mode
           assert:
@@ -344,9 +345,9 @@
               - res.interfaces[0].master is none
         - name: TEST5, run module
           ip_link_device_attribute:
-              name: dummy-master
-              master: bridge-example
-              state: up
+            name: dummy-master
+            master: bridge-example
+            state: up
           register: res
         - name: TEST5, assert results
           assert:
@@ -357,9 +358,9 @@
               - res.interfaces[0].master == 'bridge-example'
         - name: TEST5, run module for the second time
           ip_link_device_attribute:
-              name: dummy-master
-              master: bridge-example
-              state: up
+            name: dummy-master
+            master: bridge-example
+            state: up
           register: res
         - name: TEST5, assert idempotency
           assert:
@@ -369,8 +370,8 @@
               - res.interfaces[0].master == 'bridge-example'
         - name: TEST5, run module with nomaster
           ip_link_device_attribute:
-              name: dummy-master
-              nomaster: true
+            name: dummy-master
+            nomaster: true
           register: res
         - name: TEST5, assert results with nomaster
           assert:

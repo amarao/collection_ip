@@ -1,3 +1,4 @@
+---
 - name: Install iproute2 if missing
   become: true
   block:
@@ -163,23 +164,23 @@
               peer_name: veth91
         - name: TEST2, create vlan
           ip_link_device:
-              name: veth90.4000
-              state: present
-              link: veth90
-              type: vlan
-              vlan_options:
-                protocol: 802.1q
-                id: 4000
-                reorder_hdr: true
-                gvrp: true
-                mvrp: true
-                loose_binding: true
-                ingress_qos_map:
-                    - '1:2'
-                    - '3:1'
-                egress_qos_map:
-                    - '1:2'
-                    - '2:3'
+            name: veth90.4000
+            state: present
+            link: veth90
+            type: vlan
+            vlan_options:
+              protocol: 802.1q
+              id: 4000
+              reorder_hdr: true
+              gvrp: true
+              mvrp: true
+              loose_binding: true
+              ingress_qos_map:
+                - '1:2'
+                - '3:1'
+              egress_qos_map:
+                - '1:2'
+                - '2:3'
           register: module_res
         - name: TEST2, assert module output
           assert:
@@ -232,7 +233,7 @@
               iseq: true
               oseq: false
               ikey: 42
-              okey: no
+              okey: false
               icsum: true
               ocsum: false
               ttl: 33
@@ -291,7 +292,7 @@
               iseq: true
               oseq: false
               ikey: 12
-              okey: no
+              okey: false
               icsum: true
               ocsum: false
               ttl: 33
