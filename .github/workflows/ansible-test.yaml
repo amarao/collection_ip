@@ -12,10 +12,18 @@ name: Ansible collection
       - master
 
 jobs:
-  test:
-
+  lint:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install yamllint
+        run: apt install yamllint
+      - name: Lint
+        run: yamllint .
 
+  test:
+    runs-on: ubuntu-latest
     steps:
       - name: Log github.ref
         run: echo ${{ github.ref }}
@@ -62,10 +70,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Remove tests from final distribution
+        run: rm -r tests/
+        working-directory: ansible_collections/amarao/ip
       - name: Build collection
         run: ansible-galaxy collection build
         working-directory: ansible_collections/amarao/ip
-      - name: Exctract version
+      - name: Extract version
         id: version
         run: |
           version=$(cat galaxy.yml |grep ^version|awk '{print $2}')
@@ -98,10 +109,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: collection
-      - run: ls -la amarao-ip-${{needs.build.outputs.version }}.tar.gz
-      - run: echo ansible-galaxy collection upload amarao-ip-${{needs.build.outputs.version }}.tar.gz --api-key="${{ secrets.TEST_SECRET }}"
-#    - name: Upload artifact
-#      uses: actions/upload-artifact@v1
-#      with:
-#        name: ?
-#        path: ?
+      - name: Debug output
+        run: ls -la amarao-ip-${{needs.build.outputs.version }}.tar.gz
+      - name: Upload collection to galaxy
+        run: ansible-galaxy collection publish amarao-ip-${{ needs.build.outputs.version }}.tar.gz --api-key="${{ secrets.GALAXY_API_TOKEN }}"

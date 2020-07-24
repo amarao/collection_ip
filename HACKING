@@ -1,0 +1,12 @@
+You need `ansible-test` to run tests.
+(It's available with ansible from pypi/pip. Many distribution, like Ubuntu and Debian
+do not ship it in system package).
+
+There are two scenarios for test: CI and 'docker-priveleged'. For docker-priveleged scenario
+you need to have docker on VM you can discard (reboot) after tests.
+
+To run test make venv with ansible 2.9.something and run 
+```
+ansible-test integration --python 3.8 ip_link_device --allow-root --docker --docker-privileged
+```
+from ansible_collections/amarao/ip directory.

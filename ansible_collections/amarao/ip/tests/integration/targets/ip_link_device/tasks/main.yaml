@@ -1,0 +1,371 @@
+---
+- name: Install iproute2 if missing
+  become: true
+  block:
+    - name: Check if ip binary is present
+      command: ip -V
+      changed_when: false
+      failed_when: false
+      register: ip_ver
+    - name: Install iproute2 on debian-based distro
+      shell: apt update && apt install -y iproute2 kmod
+      when: ansible_os_family == 'Debian' and ip_ver.rc != 0
+    - name: Install iproute2 on non-debian distro
+      package: name=iproute2 state=present
+      when: ansible_os_family != 'Debian' and ip_ver.rc != 0
+
+    # TEST1: Create veth interface and test for idempotency/check_mode
+    # stages:
+    # - try check_mode and confirm there were no changes
+    # - create veth with all possible common options
+    # - confirm changes
+    # - run the module for the second time with the same parameters
+    # - confirm 'present' idempotency
+    # - delete veth in check mode
+    # - ensure veth is still present
+    # - delete veth for real
+    # - confirm no veth
+    # - confirm 'absent' idempotency
+    - name: TEST1 - create and delete veth
+      become: true
+      block:
+        - name: TEST1, preparation
+          ip_netns: name=veth99_ns state=present
+
+        - name: TEST1, check mode for veth create
+          ip_link_device: name=veth99 state=present type=veth
+          check_mode: true
+          register: module_res
+        - name: TEST1, assert module output
+          assert:
+            that:
+              - module_res.changed
+        - name: TEST1, get and test that no veth present
+          command: ip link show veth99
+          register: command_res
+          failed_when: "'does not exist' not in command_res.stderr"
+
+        - name: TEST1, create veth
+          ip_link_device:
+            name: veth99
+            namespace: veth99_ns
+            state: present
+            type: veth
+            veth_options:
+              peer_name: veth100
+            link: lo  # useless, but should be accepted
+            txqueuelen: 2
+            address: ae:68:d8:d7:71:9c
+            broadcast: fe:fe:fe:fe:fe:fe
+            mtu: 1499
+            index: 999
+            numtxqueues: 3  # can't test
+            numrxqueues: 4  # can't test
+          register: module_res
+        - name: TEST1, check module results
+          assert:
+            that:
+              - module_res.changed
+        - name: TEST1 get results
+          command: ip net exec veth99_ns ip -d link show veth99
+          register: command_res
+
+        - name: TEST1, assert actual interface properties
+          assert:
+            that:
+              - "'mtu 1499' in command_res.stdout"
+              - "'link/ether ae:68:d8:d7:71:9c' in command_res.stdout"
+              - "'brd fe:fe:fe:fe:fe:fe' in command_res.stdout"
+              - "'veth99@veth100' in command_res.stdout"  # peer name
+              - "'qlen 2' in command_res.stdout"
+              - "'999:' in command_res.stdout"
+              - "'numtxqueues 3' in command_res.stdout"
+              - "'numrxqueues 4' in command_res.stdout"
+
+        - name: TEST1, Run second time
+          ip_link_device:
+            name: veth99
+            namespace: veth99_ns
+            state: present
+            type: veth
+          register: module_res
+        - name: TEST1, assert idempotency
+          assert:
+            that:
+              - not module_res.changed
+
+        - name: TEST1, Run state=absent in check_mode
+          ip_link_device:
+            name: veth99
+            namespace: veth99_ns
+            state: absent
+          check_mode: true
+          register: module_res
+        - name: TEST1, assert status for check_mode
+          assert:
+            that:
+              - module_res.changed
+        - name: TEST1, check if interface is still there
+          command: ip net exec veth99_ns ip link show veth99
+          # fail automatically if no intefaces are found
+
+        - name: TEST1, remove interface
+          ip_link_device:
+            name: veth99
+            namespace: veth99_ns
+            state: absent
+          register: module_res
+
+        - name: TEST1, assert delete results
+          assert:
+            that:
+              - module_res.changed
+
+        - name: TEST1, check if interface was removed
+          command: ip net exec veth99_ns ip link show veth99
+          register: command_res
+          failed_when: command_res.rc==0
+
+        - name: TEST1, remove absent interface second time
+          ip_link_device:
+            name: veth99
+            namespace: veth99_ns
+            state: absent
+          register: module_res
+
+        - name: TEST1, assert delete results
+          assert:
+            that:
+              - not module_res.changed
+
+      always:
+        - name: TEST1, cleanup
+          ip_netns: name=veth99_ns state=absent
+        - name: TEST1, cleanup
+          command: ip link delete veth99
+          failed_when: false
+
+
+    # TEST2: Create and delete vlan interface
+    # stages:
+    # - prepare veth interface to hold vlan
+    # - Create vlan with all reasonable VLAN-specific options
+    # - check result
+    # - cleanup
+    - name: TEST2 - create and delete vlan
+      become: true
+      block:
+        - name: TEST2, prepare, create veth
+          ip_link_device:
+            name: veth90
+            state: present
+            type: veth
+            veth_options:
+              peer_name: veth91
+        - name: TEST2, create vlan
+          ip_link_device:
+            name: veth90.4000
+            state: present
+            link: veth90
+            type: vlan
+            vlan_options:
+              protocol: 802.1q
+              id: 4000
+              reorder_hdr: true
+              gvrp: true
+              mvrp: true
+              loose_binding: true
+              ingress_qos_map:
+                - '1:2'
+                - '3:1'
+              egress_qos_map:
+                - '1:2'
+                - '2:3'
+          register: module_res
+        - name: TEST2, assert module output
+          assert:
+            that:
+              - module_res.changed
+        - name: TEST2, get result
+          command: ip -d link show veth90.4000
+          register: command_res
+        - name: TEST2, assert result
+          assert:
+            that:
+              - "'veth90.4000@veth90' in command_res.stdout"
+              - "'vlan protocol 802.1Q' in command_res.stdout"
+              - "'id 4000' in command_res.stdout"
+              - "'REORDER_HDR' in command_res.stdout"
+              - "'GVRP' in command_res.stdout"
+              - "'MVRP' in command_res.stdout"
+              - "'LOOSE_BINDING' in command_res.stdout"
+              - "'ingress-qos-map { 1:2 3:1 }' in command_res.stdout"
+              - "'egress-qos-map { 1:2 2:3 }' in command_res.stdout"
+
+        - name: TEST2, cleanup
+          ip_link_device:
+            name: '{{ item }}'
+            state: absent
+          loop:
+            - veth90.4000
+            - veth90
+      always:
+        - name: TEST2 - remove veth
+          command: ip link delete veth90
+          failed_when: false
+
+    # TEST3: Create and delete gre interface
+    # stages:
+    # - Create gre with all reasonable GRE-specific options
+    # - check result
+    # - cleanup
+    - name: TEST3 - create and delete GRE
+      become: true
+      block:
+        - name: TEST3, create GRE
+          ip_link_device:
+            device: gre99  # check if 'device' alias works
+            type: gre
+            state: present
+            gre_options:
+              remote: 127.0.0.2
+              local: 127.0.0.1
+              iseq: true
+              oseq: false
+              ikey: 42
+              okey: false
+              icsum: true
+              ocsum: false
+              ttl: 33
+              tos: 1
+              pmtudisc: true
+              ignore_df: true
+              dev: lo
+              # can't test 'external'
+          register: module_res
+        - name: TEST3, assert module output
+          assert:
+            that:
+              - module_res.changed
+        - name: TEST3, get results
+          command: ip -o -d link show gre99
+          register: command_res
+        - name: TEST3, assert results
+          assert:
+            that:
+              - "'gre99@lo:' in command_res.stdout"
+              - "'link/gre 127.0.0.1' in command_res.stdout"
+              - "'peer 127.0.0.2' in command_res.stdout"
+              - "'dev lo' in command_res.stdout"
+              - "'ttl 33' in command_res.stdout"
+              - "'nopmtudisc' in command_res.stdout"
+              - "'ignore-df' in command_res.stdout"
+              - "'iseq' in command_res.stdout"
+              - "'icsum' in command_res.stdout"
+              - "'oseq' not in command_res.stdout"
+              - "'ocsum' not in command_res.stdout"
+        - name: TEST3, delete gre99
+          ip_link_device:
+            name: gre99
+            state: absent
+      always:
+        - name: TEST3 - cleanup
+          command: ip link delete gre99
+          failed_when: false
+
+    # TEST4: Create and delete gretap interface
+    # stages:
+    # - Create gre with all reasonable GRETAP-specific options
+    # - check result
+    # - cleanup
+    - name: TEST4 - create and delete GRETAP
+      become: true
+      block:
+        - name: TEST4, create GRETAP
+          ip_link_device:
+            device: gretap99  # check if 'device' alias works
+            type: gretap
+            state: present
+            gretap_options:
+              remote: 127.0.0.2
+              local: 127.0.0.1
+              iseq: true
+              oseq: false
+              ikey: 12
+              okey: false
+              icsum: true
+              ocsum: false
+              ttl: 33
+              tos: 1
+              pmtudisc: true
+              ignore_df: true
+              dev: lo
+              # can't test 'external'
+          register: module_res
+        - name: TEST4, assert module output
+          assert:
+            that:
+              - module_res.changed
+        - name: TEST4, get results
+          command: ip -o -d link show gretap99
+          register: command_res
+        - name: TEST4, assert results
+          assert:
+            that:
+              - "'gretap99@lo:' in command_res.stdout"
+              - "'link/gretap 127.0.0.1' in command_res.stdout or 'local 127.0.0.1' in command_res.stdout"
+              - "'peer 127.0.0.2' in command_res.stdout or 'remote 127.0.0.2' in command_res.stdout"
+              - "'dev lo' in command_res.stdout"
+              - "'ttl 33' in command_res.stdout"
+              - "'nopmtudisc' in command_res.stdout"
+              - "'ignore-df' in command_res.stdout"
+              - "'iseq' in command_res.stdout"
+              - "'icsum' in command_res.stdout"
+              - "'oseq' not in command_res.stdout"
+              - "'ocsum' not in command_res.stdout"
+        - name: TEST4, delete gretap99
+          ip_link_device:
+            name: gretap99
+            state: absent
+      always:
+        - name: TEST4 - cleanup
+          command: ip link delete gretap99
+          failed_when: false
+
+# TEST5: Create and delete vxlan intergace
+# stages:
+# - Create gre with all reasonable VXLAN-specific options
+# - check result
+# - cleanup
+- name: TEST5 - create and delete VXLAN
+  become: true
+  block:
+    - name: TEST5, create VXLAN
+      ip_link_device:
+        device: vxlan5  # check if 'device' alias works
+        type: vxlan
+        vxlan_options:
+          id: 99
+        state: present
+  always:
+    - name: TEST5, cleanup
+      command: ip link delte vxlan5
+      failed_when: false
+
+  when: ansible_virtualization_type | default('') != 'docker'
+
+# TEST6 create dummy interface
+- name: TEST5 - create and delete VXLAN
+  become: true
+  block:
+    - name: TEST6, create dummy interface
+      ip_link_device:
+        device: dummy3
+        type: dummy
+        state: present
+  always:
+    - name: TEST5, cleanup
+      command: ip link delte dummy3
+      failed_when: false
+
+  when: ansible_virtualization_type | default('') != 'docker'

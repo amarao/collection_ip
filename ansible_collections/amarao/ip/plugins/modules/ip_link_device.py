@@ -124,25 +124,29 @@ options:
     numtxqueues:
         type: int
         description:
-            - Number of transmit queues for a new interface
-            - Default value is used by the kernel if omitted
+            - Number of transmit queues for a new interface.
+            - Default value is used by the kernel if omitted.
 
     numrxqueues:
         type: int
         description:
-            - Number of recieve queues for a new interface
-            - Default value is used by the kernel if omitted
+            - Number of recieve queues for a new interface.
+            - Default value is used by the kernel if omitted.
 
     gso_max_size:
         type: int
         description:
             - Number of bytes for GSO (Generic Segment Offload)
-            - Default value is used by the kernel if omitted
+            - Poorly tested
+            - Requires new version of the kernel and iproute2 package.
+            - Default value is used by the kernel if omitted.
 
     gso_max_segs:
         type: int
         description:
             - Number of segments for GSO (Generic Segment Offload)
+            - Poorly tested
+            - Requires new version of the kernel and iproute2 package.
             - Default value is used by the kernel if omitted
 
     vlan_options:
@@ -190,7 +194,10 @@ options:
                 type: bool
                 description:
                     - Should VLAN device link state tracks the state of
-                      bridge ports that are members of the VLAN
+                      bridge ports that are members of the VLAN.
+                    - Poorly tested.
+                    - Requires new version of the kernel and iproute2 package.
+
 
             ingress_qos_map:
                 type: list
@@ -216,11 +223,14 @@ options:
                 type: int
                 description:
                     - VNI (VXLAN Segment Identifier) to use
+                    - Some iproute2 versions reject to create vxlan device
+                      without this option.
             dev:
                 type: str
                 description:
                     - Name of device to use for tunnel endpoint communication
-                    - Do not confuse with I(device), which is alias for I(name).
+                    - Do not confuse with I(device), which is alias for
+                      I(name).
 
             group:
                 type: str
@@ -758,7 +768,7 @@ class LinkDevice(object):
             self.module.fail_json(msg=to_text('State=present requires type'))
         if self.state == 'present':
             self.type_options = (
-                module.params.get(self.type + '_options'),
+                module.params.get(self.type + '_options') or
                 {}
             )
             self._validate_type_options()
@@ -898,7 +908,7 @@ def main():
             ['name', 'group_id'],
             [
                 'vlan_options', 'vxlan_options', 'gre_options',
-                'gretap_options'
+                'gretap_options', 'veth_options'
             ]
         ],
         required_one_of=[['name', 'group_id']],
