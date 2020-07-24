@@ -12,10 +12,18 @@ name: Ansible collection
       - master
 
 jobs:
-  test:
-
+  lint:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install yamllint
+        run: apt install yamllint
+      - name: Lint
+        run: yamllint .
 
+  test:
+    runs-on: ubuntu-latest
     steps:
       - name: Log github.ref
         run: echo ${{ github.ref }}
