@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install yamllint
-        run: apt install yamllint
+        run: sudo apt install yamllint
       - name: Lint
         run: yamllint .
 
@@ -81,17 +81,12 @@ jobs:
         run: |
           version=$(cat galaxy.yml |grep ^version|awk '{print $2}')
           echo "::set-output name=version::$version"
-          echo "::set-env name=COLLECTION_VERSION::$version"
         working-directory: ansible_collections/amarao/ip
-      - name: Print debug info
-        run: |
-          echo ${{ job.outputs.version }}
-          echo ${{ github.ref }}
-          echo ${{ endsWith(github.ref, steps.version.outputs.version) }}
       - name: Print artifact info
         run: |
           ls -la amarao-ip-${{ steps.version.outputs.version }}.tar.gz
-          sha512sum amarao-ip-$COLLECTION_VERSION.tar.gz
+          sha512sum amarao-ip-${{ steps.version.outputs.version }}.tar.gz
+          tar tzf amarao-ip-${{ steps.version.outputs.version }}.tar.gz
         working-directory: ansible_collections/amarao/ip
       - name: Save artifact
         if: ${{ endsWith(github.ref, steps.version.outputs.version) }}

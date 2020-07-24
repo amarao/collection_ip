@@ -38,7 +38,7 @@
             address: '{{ mock_mac }}'
             broadcast: '{{ mock_broadcast }}'
             alias: vethalias
-            promisc: true
+            promisc: false
             txqueuelen: '{{ mock_txqlen }}'
             arp: false
             group: '{{ mock_group }}'
@@ -76,7 +76,7 @@
             address: '{{ mock_mac }}'
             broadcast: '{{ mock_broadcast }}'
             alias: vethalias
-            promisc: false
+            promisc: true
             txqueuelen: '{{ mock_txqlen }}'
             arp: false
             group: '{{ mock_group }}'
