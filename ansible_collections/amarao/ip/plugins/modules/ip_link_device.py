@@ -27,7 +27,7 @@ requirements: [iproute2]
 description: >
     Allows to create or delete network interfaces in Linux using ip utility
     from iproute2 package. It currently support a limited number of
-    interface types (vlan, vxlan, veth) for creation but it can
+    interface types (vlan, vxlan, veth, bridge) for creation but it can
     delete interfaces of any deletable type.
 
 options:
@@ -46,7 +46,7 @@ options:
             - Id of the group of interfaces to delete.
             - Can be used only for I(state)=absent.
             - The group 'default' contains all interfaces which aren't part
-              of some other group.
+              of some other group (use with caution).
 
     namespace:
         type: str
@@ -67,22 +67,23 @@ options:
 
     type:
         type: str
-        choices: [veth, vlan, vxlan, gre, gretap, dummy]
+        choices: [bridge, dummy, gre, gretap, veth, vlan, vxlan]
         description:
             - Type of a new interface to add or delete
             - Can be specified instead of I(name) or I(group_id)
               for I(state)=absent, in this case all interfaces of that
               type are removed
             - Module may fail if corresponding kernel module is not available
-            - Each type has own set of additional options
-              (f.e. I(vlan_options), I(veth_options))
+            - Each type (except C(dummy)) has own set of additional options
+              (f.e. I(vlan_options), I(veth_options), I(bridge_options))
 
     link:
         type: str
         description:
             - Name of parent interface for vlan type device
-            - Required for I(type)=vlan #check for others
+            - Required for I(type)=vlan
             - Parent device should exist
+            - Is ignored if had no sense
 
     txqueuelen:
         type: int
@@ -570,13 +571,271 @@ options:
                 description:
                     - Use externally controlled tunnels.
 
+    bridge_options:
+        type: dict
+        description:
+            - Options, specific for I(type)=C(bridge).
+            - Should not be used for any other type.
+        suboptions:
+            ageing_time:
+                type: int
+                required: false
+                description:
+                    - Aging time for bridge FDB entries.
+                    - Value in seconds.
+
+            group_fwd_mask:
+                type: int
+                required: false
+                description:
+                    - Bitmask for link-local addresses to be forwared.
+                    - Default value in the kernel is 0.
+                    - Value 0 disables link-local address forwarding.
+
+            group_address:
+                type: str
+                required: false
+                description:
+                    - MAC address of the multicast group for this bridge
+                      to use for STP.
+                    - Address must be link-local address in a standard form
+                      (01:80:C2:00:00:01).
+
+            forward_delay:
+                type: int
+                required: false
+                description:
+                    - Delay for transitioning from LISTENING to LEARNING
+                      and from LEARNING to FORWARDING states for STP.
+                    - Used only if STP is enabled.
+                    - Valid values are from 2 to 30.
+
+            hello_time:
+                type: int
+                required: false
+                description:
+                    - Delay between HELLO packets in STP when it's not root
+                      or designated bridge.
+                    - Used only if STP is enabled.
+                    - Valid values are from 1 to 10.
+
+            max_age:
+                type: int
+                required: false
+                description:
+                    - HELLO packet timeout.
+                    - Used only if STP is enabled.
+                    - Valid values are from 6 to 40.
+
+            stp:
+                type: bool
+                required: false
+                description:
+                    - Enable STP
+                    - Corresponds to stp_state paramter to ip link.
+
+            priority:
+                type: int
+                required: false
+                description:
+                    - Set bridge priority for STP.
+                    - Used only if STP is enabled.
+                    - Valid values are from 0 to 65535.
+
+            vlan_filtering:
+                type: bool
+                required: false
+                description:
+                    - Enable or disable VLAN filtering.
+                    - If disabled, bridge will ignore VLAN tag on packets.
+
+            vlan_protocol:
+                type: str
+                choices: [802.1Q, 802.1ad]
+                required: false
+                description:
+                    - Protocol to use for vlan filtering.
+
+            vlan_default_pvid:
+                type: int
+                required: false
+                description:
+                    - default PVID for the bridge.
+                    - Value set VLAN ID for untagged/native traffic.
+
+            vlan_stats:
+                type: bool
+                required: false
+                description:
+                    - Enable per-vlan stats accounting.
+                    - Corresponds to vlan_stats_enabled option for ip link.
+
+            vlan_stats_per_port:
+                type: bool
+                required: false
+                description:
+                    - Enable per-VLAN per-port accounting.
+                    - Can be changed only when there are no port VLANs
+                      configured.
+
+            mcast_snooping:
+                type: bool
+                required: false
+                description:
+                    - Enable multicast snooping.
+
+            mcast_router:
+                type: int
+                required: false
+                choices: [0, 1, 2]
+                description:
+                    - Set routing mode for bidge for multicast routing
+                      if IGMP snooping is enabled.
+                    - 0 disables routing mode.
+                    - 1 sets automatic mode.
+                    - 2 permanently enable routing.
+
+            mcast_query_use_ifaddr:
+                type: bool
+                required: false
+                description:
+                    - Enable use bridge own IP address for IGMP queries.
+                    - Address 0.0.0.0 is used if disabled.
+
+            mcast_querier:
+                type: bool
+                required: false
+                description:
+                    - Enable IGMP querier.
+                    - Disabled by default.
+
+            mcast_querier_interval:
+                type: int
+                required: false
+                description:
+                    - Interval between queries by IGMP querier.
+                    - Used only if I(mcast_querier) is enabled.
+
+            mcast_hash_elasticity:
+                type: int
+                required: false
+                description:
+                    - Maximum chain length for hash database for multicast.
+                    - Default value in the kernel is 4.
+
+            mcast_hash_max:
+                type: int
+                required: false
+                description:
+                    - Maximum size of the multicast hash table.
+                    - Must be power of 2.
+                    - Default value in the kernel is 512.
+
+            mcast_last_member_count:
+                type: int
+                required: false
+                description:
+                    - Number of queries before stopping forwaring for
+                      a multicast group after 'leave' message.
+                    - Default value in the kernel is 2.
+
+            mcast_last_member_interval:
+                type: int
+                required: false
+                description:
+                    - Interval between queries to find remaining members of
+                      group after 'leave' message was recieved.
+                    - Value in seconds.
+
+            mcast_startup_query_count:
+                type: int
+                required: false
+                description:
+                    - Number of IGMP queries at startup phase.
+                    - Default value in the kernel is 2.
+
+            mcast_startup_query_interval:
+                type: int
+                required: false
+                description:
+                    - Interval between IGMP queries in startup phase.
+                    - Value in seconds.
+
+            mcast_query_interval:
+                type: int
+                required: false
+                description:
+                    - Inverval between IGMP queries after startup.
+                    - Value in seconds.
+
+            mcast_query_response_interval:
+                type: int
+                required: false
+                description:
+                    - Max response time for IGMP/MLD queries.
+                    - Value in seconds.
+
+            mcast_membership_interval:
+                type: int
+                required: false
+                description:
+                    - Delay before leaving a group if no membership reports
+                      for this group was recieved.
+                    - Value in seconds.
+
+            mcast_stats:
+                type: bool
+                required: false
+                description:
+                    - Enable stats accounting for IGMP/MLD.
+                    - Corresponds to mcast_stats_enabled option of ip link.
+
+            mcast_igmp_version:
+                type: str
+                required: false
+                description:
+                    - Set version of IGMP.
+
+            mcast_mld_version:
+                type: str
+                required: false
+                description:
+                    - Set version of MLD.
+
+            nf_call_iptables:
+                type: bool
+                required: false
+                description:
+                    - Enable iptables hooks on the bridge.
+
+            nf_call_ip6tables:
+                type: bool
+                required: false
+                description:
+                    - Enable ip6tables hooks on the bridge.
+
+            nf_call_arptables:
+                type: bool
+                required: false
+                description:
+                    - Enable arptables hooks on the bridge.
+
 notes:
-    - The module does not check the interface type when performing checks
+    - The module does not check the interface type when checking
       if interface is present or not. I(type) and corresponding options are
       used only for the creation of a new interface and are used only if no
       interface with I(name) found and I(state)=C(present).
+    - This module does not change parameters for existing interfaces,
+      all type-specific options are used only for new interfaces.
+    - See M(ip_link_device_attribute) module for updating attributes of
+      an existing interface.
     - Some type-specific options may have additional restrictions which are not
       described in the module documentation. Check "man ip-link" for details.
+    - Some interfaces types may require kernel modules available (vxlan, gre).
+    - Some options may require new version of iproute2 and the kernel.
+    - Virtual interfaces (gre, vxlan) creates 'fake' interfaces when activated.
+      They can be removed only by unloading corresponding modules
+      (f.e. rmmod ip_gre).
 """
 
 EXAMPLES = """
@@ -614,6 +873,14 @@ EXAMPLES = """
       name: dummy3
       type: dummy
       state: present
+
+- name: Create bridge
+  ip_link_device:
+        device: br0
+        type: bridge
+        bridge_options:
+            ageing_time: 42
+        state: present
 """
 
 RETURN = """
@@ -724,6 +991,53 @@ TYPE_COMMANDS = {
         'external': lambda flag: [['external'] if flag else []],
     },
     'dummy': {},
+    'bridge': {
+        'ageing_time': lambda time: ['ageing_time', str(time)],
+        'group_fwd_mask': lambda mask: ['group_fwd_mask', str(mask)],
+        'group_address': lambda addr: ['group_address', addr],
+        'forward_delay': lambda delay: ['forward_delay', str(delay)],
+        'hello_time': lambda time: ['hello_time', str(time)],
+        'max_age': lambda age: ['max_age', age],
+        'stp': lambda state: ['stp_state', str(int(state))],
+        'priority': lambda pri: ['priority', str(pri)],
+        'vlan_filtering': lambda flag: ['vlan_filtering', str(int(flag))],
+        'vlan_protocol': lambda proto: ['vlan_protocol', str(proto)],
+        'vlan_default_pvid': lambda pvid: ['vlan_default_pvid', str(pvid)],
+        'vlan_stats': lambda flag: ['vlan_stats_enabled', str(int(flag))],
+        'vlan_stats_per_port': lambda flag: [
+            'vlan_stats_per_port', str(int(flag))],
+        'mcast_snooping': lambda flag: ['mcast_snooping', str(int(flag))],
+        'mcast_router': lambda mode: ['mcast_router', str(mode)],
+        'mcast_query_use_ifaddr': lambda flag: [
+            'mcast_query_use_ifaddr', str(int(flag))],
+        'mcast_querier': lambda flag: ['mcast_querier', str(int(flag))],
+        'mcast_querier_interval': lambda interval: [
+            'mcast_querier_interval', str(interval)],
+        'mcast_hash_elasticity': lambda chains: [
+            'mcast_hash_elasticity', str(chains)],
+        'mcast_hash_max': lambda max_hash: ['mcast_hash_max', str(max_hash)],
+        'mcast_last_member_count': lambda cnt: [
+            'mcast_last_member_count', str(cnt)],
+        'mcast_last_member_interval': lambda interval: [
+            'mcast_last_member_interval', str(interval)],
+        'mcast_startup_query_count': lambda cnt: [
+            'mcast_startup_query_count', str(cnt)],
+        'mcast_startup_query_interval': lambda interval: [
+            'mcast_startup_query_interval', str(interval)],
+        'mcast_query_interval': lambda interval: [
+            'mcast_query_interval', str(interval)],
+        'mcast_query_response_interval': lambda interval: [
+            'mcast_query_response_interval', str(interval)],
+        'mcast_membership_interval': lambda interval: [
+            'mcast_membership_interval', str(interval)],
+        'mcast_stats': lambda flg: ['mcast_stats_enabled', str(int(flg))],
+        'mcast_igmp_version': lambda ver: ['mcast_igmp_version', str(ver)],
+        'mcast_mld_version': lambda ver: ['mcast_mld_version', str(ver)],
+        'nf_call_iptables': lambda flag: ['nf_call_iptables', str(int(flag))],
+        'nf_call_ip6tables': lambda flag: ['nf_call_iptables', str(int(flag))],
+        'nf_call_arptables': lambda flag: [
+            'nf_call_arptables', str(int(flag))],
+    }
 }
 
 
@@ -883,7 +1197,7 @@ def main():
             'namespace': {},
             'state': {'choices': ['present', 'absent'], 'required': True},
             'type': {'choices': [
-                'veth', 'vlan', 'vxlan', 'gre', 'gretap', 'dummy'
+                'veth', 'vlan', 'vxlan', 'gre', 'gretap', 'dummy', 'bridge'
             ]},
             'link': {},
             'txqueuelen': {'type': 'int'},
@@ -900,6 +1214,7 @@ def main():
             'vxlan_options': {'type': 'dict'},
             'gre_options': {'type': 'dict'},
             'gretap_options': {'type': 'dict'},
+            'bridge_options': {'type': 'dict'},
 
         },
         supports_check_mode=True,
@@ -908,7 +1223,7 @@ def main():
             ['name', 'group_id'],
             [
                 'vlan_options', 'vxlan_options', 'gre_options',
-                'gretap_options', 'veth_options'
+                'gretap_options', 'veth_options', 'bridge_options'
             ]
         ],
         required_one_of=[['name', 'group_id']],
