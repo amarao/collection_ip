@@ -69,13 +69,13 @@ options:
         type: str
         choices: [bridge, dummy, gre, gretap, veth, vlan, vxlan]
         description:
-            - Type of a new interface to add or delete
+            - Type of a new interface to add or delete.
             - Can be specified instead of I(name) or I(group_id)
               for I(state)=absent, in this case all interfaces of that
-              type are removed
+              type are removed.
             - Module may fail if corresponding kernel module is not available
             - Each type (except C(dummy)) has own set of additional options
-              (f.e. I(vlan_options), I(veth_options), I(bridge_options))
+              (f.e. I(vlan_options), I(veth_options), I(bridge_options)).
 
     link:
         type: str
@@ -576,6 +576,9 @@ options:
         description:
             - Options, specific for I(type)=C(bridge).
             - Should not be used for any other type.
+            - Option 'mcast_hash_elasticity' from man pages for ip link
+              is deprecated in modern kernels and is not supported in
+              this module (use I(mcast_hash_max) insdead).
         suboptions:
             ageing_time:
                 type: int
@@ -719,13 +722,6 @@ options:
                 description:
                     - Interval between queries by IGMP querier.
                     - Used only if I(mcast_querier) is enabled.
-
-            mcast_hash_elasticity:
-                type: int
-                required: false
-                description:
-                    - Maximum chain length for hash database for multicast.
-                    - Default value in the kernel is 4.
 
             mcast_hash_max:
                 type: int
@@ -1017,8 +1013,6 @@ TYPE_COMMANDS = {
         'mcast_querier': lambda flag: ['mcast_querier', str(int(flag))],
         'mcast_querier_interval': lambda interval: [
             'mcast_querier_interval', str(interval)],
-        'mcast_hash_elasticity': lambda chains: [
-            'mcast_hash_elasticity', str(chains)],
         'mcast_hash_max': lambda max_hash: ['mcast_hash_max', str(max_hash)],
         'mcast_last_member_count': lambda cnt: [
             'mcast_last_member_count', str(cnt)],
