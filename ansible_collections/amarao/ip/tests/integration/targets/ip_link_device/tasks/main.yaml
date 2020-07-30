@@ -409,6 +409,7 @@
           nf_call_ip6tables: true
           nf_call_arptables: true
         state: present
+      register: module_res
     - name: TEST7, assert module output
       assert:
         that:
@@ -444,4 +445,35 @@
   always:
     - name: TEST7, cleanup
       command: ip link delte br0
+      failed_when: false
+
+# TEST8 search interface in namespace
+- name: TEST8 - search interface in namespace
+  become: true
+  block:
+    - name: TEST8, create test namespace
+      ip_netns: 
+        name: search_ns
+        state: present
+    - name: TEST8, create dummy8 interface in ns
+      ip_link_device:
+        device: dummy8
+        type: dummy
+        state: present
+        namespace: search_ns
+      register: module_res
+    - name: TEST8, try to create dummy8 interface withoput namespace
+      ip_link_device:
+        device: dummy8
+        type: dummy
+        state: present
+        search_namespaces: search_ns
+      register: module_res
+    - name: TEST8, assert results
+      assert:
+        that:
+          - not module_res.changed 
+  always:
+    - name: TEST8, cleanup
+      command: 'ip net del search_ns'
       failed_when: false
