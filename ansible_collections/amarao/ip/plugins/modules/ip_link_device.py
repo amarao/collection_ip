@@ -56,6 +56,20 @@ options:
             - If interface with I(type)=veth is created in a namespace,
               peer interface is created in the same namespace
 
+    search_namespaces:
+        type: list
+        elements: str
+        description:
+            - List of network namespaces to check if interface is already
+              exist.
+            - Used only for I(state)=C(present).
+            - If interface exists in any of namespace from I(search_namespaces)
+              it is not created.
+            - If interface is not found in any of I(search_namespaces)
+              namespace it's created in I(namespace) namespace (or in
+              root namespace if no I(namespace) specified.
+            - If namespace from the list does not exists, it's ignored.
+
     state:
         type: str
         choices: [present, absent]
@@ -1044,6 +1058,7 @@ class LinkDevice(object):
 
     params_list = [  # module paramters which aren't passed to ip or special
         'name', 'namespace', 'group_id', 'state', 'type', 'link',
+        'search_namespaces'
     ]
     knob_cmds = {  # module paramtes which are directly translates to ip args
         'txqueuelen': lambda len: ['txqueuelen', str(len)],
@@ -1120,11 +1135,20 @@ class LinkDevice(object):
             )
         return out
 
-    def is_exists(self):
-        """Check if interface is exists in a given namespace."""
+    def is_exists(self, namespaces=None):
+        """Check if interface is exists in namespaces."""
         cmd = ['ip', '-o', 'link', 'show'] + self.id_postfix
         raw_output = self._exec(self.namespace, cmd, not_found_is_ok=True)
-        return bool(raw_output.strip())
+        res = bool(raw_output.strip())
+        if res:
+            return True
+        if namespaces:
+            for ns in namespaces:
+                raw_output = self._exec(ns, cmd, not_found_is_ok=True)
+                res = bool(raw_output.strip())
+                if res:
+                    return True
+        return res
 
     def _link_name(self):
         if self.link:
@@ -1173,16 +1197,19 @@ class LinkDevice(object):
         self._exec(self.namespace, cmd)
 
     def run(self):
-        exists = self.is_exists()
         changed = False
-        if self.state == 'absent' and exists:
-            if not self.check_mode:
-                self._delete()
-            changed = True
-        if self.state == 'present' and not exists:
-            if not self.check_mode:
-                self._create()
-            changed = True
+        if self.state == 'absent':
+            exists = self.is_exists()
+            if exists:
+                if not self.check_mode:
+                    self._delete()
+                changed = True
+        if self.state == 'present':
+            exists = self.is_exists(namespaces=self.search_namespaces)
+            if not exists:
+                if not self.check_mode:
+                    self._create()
+                changed = True
         self.module.exit_json(changed=changed)
 
 
@@ -1193,6 +1220,7 @@ def main():
             'name': {'aliases': ['device']},
             'group_id': {},
             'namespace': {},
+            'search_namespaces': {'type': 'list'},
             'state': {'choices': ['present', 'absent'], 'required': True},
             'type': {'choices': [
                 'veth', 'vlan', 'vxlan', 'gre', 'gretap', 'dummy', 'bridge'
