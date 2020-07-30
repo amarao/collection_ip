@@ -452,7 +452,7 @@
   become: true
   block:
     - name: TEST8, create test namespace
-      ip_netns: 
+      ip_netns:
         name: search_ns
         state: present
     - name: TEST8, create dummy8 interface in ns
@@ -471,7 +471,7 @@
     - name: TEST8, assert results
       assert:
         that:
-          - not module_res.changed 
+          - not module_res.changed
   always:
     - name: TEST8, cleanup
       command: 'ip net del search_ns'
