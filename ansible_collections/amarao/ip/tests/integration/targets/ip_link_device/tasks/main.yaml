@@ -461,7 +461,6 @@
         type: dummy
         state: present
         namespace: search_ns
-      register: module_res
     - name: TEST8, try to create dummy8 interface withoput namespace
       ip_link_device:
         device: dummy8
