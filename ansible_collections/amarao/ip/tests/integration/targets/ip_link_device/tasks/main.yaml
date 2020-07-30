@@ -466,7 +466,7 @@
         device: dummy8
         type: dummy
         state: present
-        search_namespaces: search_ns
+        search_namespaces: [search_ns]
       register: module_res
     - name: TEST8, assert results
       assert:
