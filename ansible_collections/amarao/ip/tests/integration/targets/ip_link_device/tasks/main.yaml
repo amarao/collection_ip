@@ -493,9 +493,9 @@
         device: bond42
         type: bond
         bond_options:
-         mode: '802.3ad'
-         miimon: 42
-         lacp_rate: fast
+          mode: '802.3ad'
+          miimon: 42
+          lacp_rate: fast
         state: present
       register: module_res
     - name: TEST9, add veth to bond

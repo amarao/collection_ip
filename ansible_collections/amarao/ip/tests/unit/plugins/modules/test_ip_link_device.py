@@ -48,9 +48,9 @@ def LinkDevice():
 
 def test_veth_create(Module, LinkDevice):
     mod = Module({
-            'name': 'veth0',
-            'state': 'present',
-            'type': 'veth'
+        'name': 'veth0',
+        'state': 'present',
+        'type': 'veth'
     })
     link = LinkDevice(mod)
     link.run()
@@ -60,9 +60,9 @@ def test_veth_create(Module, LinkDevice):
 
 def test_bond_create_no_params(Module, LinkDevice):
     mod = Module({
-            'name': 'bond0',
-            'state': 'present',
-            'type': 'bond'
+        'name': 'bond0',
+        'state': 'present',
+        'type': 'bond'
     })
     link = LinkDevice(mod)
     link.run()
@@ -72,18 +72,18 @@ def test_bond_create_no_params(Module, LinkDevice):
 
 def test_bond_create_params(Module, LinkDevice):
     mod = Module({
-            'name': 'bond0',
-            'state': 'present',
-            'type': 'bond',
-            'bond_options': {
-                'mode': '802.3ad',
-                'miimon': 42,
-                'updelay': 10,
-                'downdelay': 33,
-                'xmit_hash_policy': 'layer3+4',
-                'num_grat_arp': 13,
-                'lacp_rate': 'fast',
-            }
+        'name': 'bond0',
+        'state': 'present',
+        'type': 'bond',
+        'bond_options': {
+            'mode': '802.3ad',
+            'miimon': 42,
+            'updelay': 10,
+            'downdelay': 33,
+            'xmit_hash_policy': 'layer3+4',
+            'num_grat_arp': 13,
+            'lacp_rate': 'fast',
+        }
     })
     link = LinkDevice(mod)
     link.run()
