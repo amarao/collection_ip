@@ -476,3 +476,48 @@
     - name: TEST8, cleanup
       command: 'ip net del search_ns'
       failed_when: false
+
+# TEST9 created a bond interface
+- name: TEST9 - bond creation
+  become: true
+  block:
+    - name: Create veths
+      ip_link_device:
+        device: veth42
+        type: veth
+        veth_options:
+          peer_name: veth43
+        state: present
+    - name: TEST9, create bond
+      ip_link_device:
+        device: bond42
+        type: bond
+        bond_options:
+         mode: '802.3ad'
+         miimon: 42
+         lacp_rate: fast
+        state: present
+      register: module_res
+    - name: TEST9, assert output
+      assert:
+        that:
+          - module_res.changed
+    - name: TEST9, get results
+      command: ip -d link show dev bond42
+      register: ip_output
+    - name: TEST9, check results
+      assert:
+        that:
+          - "'bond42' in ip_output.stdout"
+          - "'MASTER' in ip_output.stdout"
+          - "'mode 802.3ad' in ip_output.stdout"
+          - "'miimon 42 ' in ip_output.stdout"
+          - "'lacp_rate fast' in ip_output.stdout"
+
+  always:
+    - name: TEST9, cleanup
+      command: '{{ item }}'
+      loop:
+        - 'ip link del veth42'
+        - 'ip link del bond42'
+      failed_when: false
