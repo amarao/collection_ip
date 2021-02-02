@@ -1397,7 +1397,7 @@ TYPE_COMMANDS = {
         "arp_interval": lambda msec: ['arp_interval', str(msec)],
         "arp_validate": lambda val: ['arp_validate', str(val)],
         "arp_all_targets": lambda val: ['arp_all_targets', str(val)],
-        "arp_ip_target": lambda tgts: ['arp_ip_target', ','.join(arp_ip_target)],
+        "arp_ip_target": lambda tgts: ['arp_ip_target', ','.join(tgts)],
         "primary": lambda dev: ['primary', dev],
         "primary_reselect": lambda param: ['primary_reselect', param],
         "fail_over_mac": lambda param: ['fail_over_mac', param],
