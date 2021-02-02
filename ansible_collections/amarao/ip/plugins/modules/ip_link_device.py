@@ -844,7 +844,7 @@ options:
               as master for the bond using M(ip_link_device_atrribute).
               (see examples).
             - Extensive documentation for linux boding is provided
-              in the Kernel docs: https://www.kernel.org/doc/Documentation/networking/bonding.txt
+              in the Kernel docs at https://www.kernel.org/doc/Documentation/networking/bonding.txt
 
         suboptions:
             mode:
@@ -942,7 +942,7 @@ options:
                     - C(filter_active) or C("5") filters on active slaves.
                     - C(filter_backup) or C("6") filters only on backup slaves.
 
-            arp_validate:
+            arp_all_targets:
                 type: str
                 choices: [any, "0", all, "1"]
                 description:
@@ -958,7 +958,7 @@ options:
                 elements: str
                 description:
                     - IP addresses to use as ARP monitoring peers when
-	                  I(arp_interval) is > 0.
+                      I(arp_interval) is > 0.
                     - Specify these values in ddd.ddd.ddd.ddd format.
                     - At least one IP address must be given for ARP monitoring
                       to function.
@@ -971,7 +971,7 @@ options:
                       C(balance-tlb), C(balance-alb).
                     - Device should exists prior to call.
                     - The specified device will always be the
-	                  active slave while it is available.
+                      active slave while it is available.
                     - Only when the primary is offline
 
             primary_reselect:
@@ -1006,44 +1006,44 @@ options:
                     - "2"
                 description:
                     - Specifies whether active-backup mode should set all slaves to
-	                  the same MAC address at enslavement (the traditional
-	                  behavior), or, when enabled, perform special handling of the
-	                  bond's MAC address in accordance with the selected policy.
+                      the same MAC address at enslavement (the traditional
+                      behavior), or, when enabled, perform special handling of the
+                      bond's MAC address in accordance with the selected policy.
                     - C("none") or C("0") disables fail_over_mac, and causes
-		              bonding to set all slaves of an active-backup bond to
-		              the same MAC address at enslavement time.
+                      bonding to set all slaves of an active-backup bond to
+                      the same MAC address at enslavement time.
                     - C("active") or C("1") makes the MAC address of the bond
                       to always  be the MAC address of the currently active slave.
                       The MAC address of the slaves is not changed; instead, the MAC
-		              address of the bond changes during a failover.
+                      address of the bond changes during a failover.
             xmit_hash_policy:
                 type: str
                 choices: [layer2, layer2+3, layer3+4, encap2+3, encap3+4]
                 description:
                     - Selects the transmit hash policy to use for slave selection in
-	                  I(mode) C(balance-xor), C(802.3ad), and C(active-tlb).
+                      I(mode) C(balance-xor), C(802.3ad), and C(active-tlb).
                     - C(layer2) uses XOR of hardware MAC addresses and packet type ID
-		              field to generate the hash. This algorithm is 802.3ad compliant.
+                      field to generate the hash. This algorithm is 802.3ad compliant.
                     - C(layer2+3) uses a combination of layer2 and layer3 protocol
                       information to generate the hash. This algorithm is 802.3ad compliant.
                     - C(layer3+4) uses upper layer protocol information,
-		              when available, to generate the hash. This algorithm is not
+                      when available, to generate the hash. This algorithm is not
                       fully 802.3ad compliant.  It may causes packets
-		              striped across two interfaces.  This may result in out
-		              of order delivery.
+                      striped across two interfaces.  This may result in out
+                      of order delivery.
                     - C(encap2+3) uses the same formula as layer2+3 but it
-		              relies on skb_flow_dissect to obtain the header fields
-		              which might result in the use of inner headers if an
-		              encapsulation protocol is used.
-                    - C(encap3+4) uses the same formula as layer3+4 but it
-		              relies on skb_flow_dissect to obtain the header fields
+                      relies on skb_flow_dissect to obtain the header fields
                       which might result in the use of inner headers if an
-		              encapsulation protocol is used.
+                      encapsulation protocol is used.
+                    - C(encap3+4) uses the same formula as layer3+4 but it
+                      relies on skb_flow_dissect to obtain the header fields
+                      which might result in the use of inner headers if an
+                      encapsulation protocol is used.
             resend_igmp:
                 type: int
                 description:
                     - Number of IGMP membership reports to be issued after
-	                  a failover event.
+                      a failover event.
                     - Value from C(0) to C(255).
                     - The kernel default is C(1).
                     - C(0) prevents the IGMP membership report from
@@ -1052,8 +1052,8 @@ options:
                 type: int
                 description:
                     - Specify the number of peer notifications (gratuitous ARPs and
-	                  unsolicited IPv6 Neighbor Advertisements) to be issued after a
-	                  failover event.
+                      unsolicited IPv6 Neighbor Advertisements) to be issued after a
+                      failover event.
                     - I(num_grat_arp) can be used instead of num_unsol_na option
                       for IPv6 networks.
                     - Valid values are from C(0) to C(255).
@@ -1075,7 +1075,7 @@ options:
                 type: int
                 description:
                     - Specifies the number of seconds between instances where the bonding
-	                  driver sends learning packets to each slaves peer switch.
+                      driver sends learning packets to each slaves peer switch.
                     - Valid only for I(mode) C(balance-tlb) and C(balance-alb).
                     - Valid vaues are in range from C(1) to C(2147483647).
                     - Default (kernel) value is C(1).
@@ -1083,7 +1083,7 @@ options:
                 type: int
                 description:
                     - Specify the number of packets to transmit through a slave before
-	                  moving to the next one.
+                      moving to the next one.
                     - When value is C(0) then a slave is chosen at random.
                     - Valid values are from C(0) to C(65535).
                     - Default (kernel) value is C(1).
@@ -1152,9 +1152,8 @@ options:
                     - mac-address for the actor in protocol
                       packet exchanges (LACPDUs) for 802.3ad protocol.
                     - If the value is not given then
-	                  system defaults to using the masters'
-                      mac address as actors' system
-	                  address.
+                      system defaults to using the masters'
+                      mac address as actors' system address.
                     - Valid only for I(mode)=C(802.3ad).
 notes:
     - The module does not check the interface type when checking
@@ -1564,7 +1563,7 @@ def main():
             'gre_options': {'type': 'dict'},
             'gretap_options': {'type': 'dict'},
             'bridge_options': {'type': 'dict'},
-
+            'bond_options': {'type': 'dict'},
         },
         supports_check_mode=True,
         mutually_exclusive=[
