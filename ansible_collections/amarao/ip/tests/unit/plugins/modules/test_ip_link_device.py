@@ -10,14 +10,14 @@ __metaclass__ = type
 import pytest
 import mock
 from ansible_collections.amarao.ip.plugins.modules import ip_link_device  # noqa
-from collections import defaultdict
+import collections  # noqa
 
 
 @pytest.fixture(scope='function')
 def Module():
     class Module:
         def __init__(self, d):
-            self.params = defaultdict(
+            self.params = collections.defaultdict(
                 lambda: None,
                 d
             )
