@@ -68,3 +68,32 @@ def test_bond_create_no_params(Module, LinkDevice):
     link.run()
     expected = ['ip', 'link', 'add', 'name', 'bond0', 'type', 'bond']
     assert link._exec.call_args[0][1] == expected
+
+
+def test_bond_create_params(Module, LinkDevice):
+    mod = Module({
+            'name': 'bond0',
+            'state': 'present',
+            'type': 'bond',
+            'bond_options': {
+                'mode': '802.3ad',
+                'miimon': 42,
+                'updelay': 10,
+                'downdelay': 33,
+                'xmit_hash_policy': 'layer3+4',
+                'num_grat_arp': 13,
+                'lacp_rate': 'fast',
+            }
+    })
+    link = LinkDevice(mod)
+    link.run()
+    expected = [
+        'ip', 'link', 'add', 'name', 'bond0',
+        'type', 'bond', 'downdelay', '33',
+        'lacp_rate', 'fast', 'miimon', '42',
+        'mode', '802.3ad', 'num_grat_arp', 13,
+        'updelay', '10', 'xmit_hash_policy',
+        'layer3+4'
+    ]
+
+    assert link._exec.call_args[0][1] == expected
