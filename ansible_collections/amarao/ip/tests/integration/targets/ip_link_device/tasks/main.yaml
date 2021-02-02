@@ -498,6 +498,10 @@
          lacp_rate: fast
         state: present
       register: module_res
+    - name: Create veths
+      ip_link_device_attribute:
+        device: veth42
+        master: bond42
     - name: TEST9, assert output
       assert:
         that:
