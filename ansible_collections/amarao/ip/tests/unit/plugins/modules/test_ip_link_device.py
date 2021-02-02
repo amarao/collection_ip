@@ -10,17 +10,22 @@ __metaclass__ = type
 import pytest
 import mock
 from ansible_collections.amarao.ip.plugins.modules import ip_link_device  # noqa
-import collections  # noqa
+# from collections import defaultdict
+
+
+class defaultdict(dict):  # workaround for broken pylint
+    def __getitem__(self, key):
+        if key in self:
+            return super(defaultdict, self).__getitem__(key)
+        else:
+            return None
 
 
 @pytest.fixture(scope='function')
 def Module():
     class Module:
         def __init__(self, d):
-            self.params = collections.defaultdict(
-                lambda: None,
-                d
-            )
+            self.params = defaultdict(d)
         check_mode = False
         fail_res = {}
         exit_res = {}
