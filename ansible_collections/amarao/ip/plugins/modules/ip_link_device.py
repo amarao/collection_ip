@@ -875,7 +875,8 @@ options:
             clear_active_slave:
                 type: bool
                 description:
-                    - Set 'clear_active_slave' option.
+                    - Set 'clear_active_slave' option when creating bond interface.
+                    - Value C(false) should not be used.
 
             miimon:
                 type: int
@@ -1370,6 +1371,35 @@ TYPE_COMMANDS = {
         'nf_call_ip6tables': lambda flag: ['nf_call_iptables', str(int(flag))],
         'nf_call_arptables': lambda flag: [
             'nf_call_arptables', str(int(flag))],
+    },
+    'bond': {
+        "mode": lambda mode: ['mode', mode],
+        "active_slave": lambda dev: ['active_slave', dev],
+        "clear_active_slave": lambda flag: ([], ['clear_active_slave'])[int(flag)],
+        "miimon": lambda msec: ['miimon', str(msec)],
+        "updelay": lambda msec: ['updelay', str(msec)],
+        "downdelay": lambda msec: ['downdelay', str(msec)],
+        "use_carrier": lambda flag: ['use_carrier', ('0', '1')[int(flag)]],
+        "arp_interval": lambda msec: ['arp_interval', str(msec)],
+        "arp_validate": lambda val: ['arp_validate', str(val)],
+        "arp_all_targets": lambda val: ['arp_all_targets', str(val)],
+        "arp_ip_target": lambda tgts: ['arp_ip_target', ','.join(arp_ip_target)],
+        "primary": lambda dev: ['primary', dev],
+        "primary_reselect": lambda param: ['primary_reselect', param],
+        "fail_over_mac": lambda param: ['fail_over_mac', param],
+        "xmit_hash_policy": lambda param: ['xmit_hash_policy', param],
+        "resend_igmp": lambda cnt: ['resend_igmp', int(cnt)],
+        "num_grat_arp": lambda cnt: ['num_grat_arp', int(cnt)],
+        "all_slaves_active": lambda flag: ['all_slaves_active', ('0', '1')[int(flag)]],
+        "min_links": lambda cnt: ['min_links', str(cnt)],
+        "lp_interval": lambda msec: ['lp_interval', str(msec)],
+        "packets_per_slave": lambda cnt: ['packets_per_slave', int(cnt)],
+        "tlb_dynamic_lb": lambda flag: ['tlb_dynamic_lb', ('0', '1')[int(flag)]],
+        "lacp_rate": lambda param: ['lacp_rate', str(param)],
+        "ad_select": lambda param: ['ad_select', str(param)],
+        "ad_user_port_key": lambda val: ['ad_user_port_key', str(val)],
+        "ad_actor_sys_prio": lambda val: ['ad_actor_sys_prio', str(val)],
+        "ad_actor_system": lambda addr: ['ad_actor_system', str(addr)],
     }
 }
 
