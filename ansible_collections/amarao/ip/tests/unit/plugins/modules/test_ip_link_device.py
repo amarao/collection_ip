@@ -91,7 +91,7 @@ def test_bond_create_params(Module, LinkDevice):
         'ip', 'link', 'add', 'name', 'bond0',
         'type', 'bond', 'downdelay', '33',
         'lacp_rate', 'fast', 'miimon', '42',
-        'mode', '802.3ad', 'num_grat_arp', 13,
+        'mode', '802.3ad', 'num_grat_arp', '13',
         'updelay', '10', 'xmit_hash_policy',
         'layer3+4'
     ]
