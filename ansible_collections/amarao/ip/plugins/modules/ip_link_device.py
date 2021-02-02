@@ -1545,7 +1545,8 @@ def main():
             'search_namespaces': {'type': 'list'},
             'state': {'choices': ['present', 'absent'], 'required': True},
             'type': {'choices': [
-                'veth', 'vlan', 'vxlan', 'gre', 'gretap', 'dummy', 'bridge'
+                'veth', 'vlan', 'vxlan', 'gre',
+                'gretap', 'dummy', 'bridge', 'bond'
             ]},
             'link': {},
             'txqueuelen': {'type': 'int'},
@@ -1571,7 +1572,8 @@ def main():
             ['name', 'group_id'],
             [
                 'vlan_options', 'vxlan_options', 'gre_options',
-                'gretap_options', 'veth_options', 'bridge_options'
+                'gretap_options', 'veth_options', 'bridge_options',
+                'bond_options'
             ]
         ],
         required_one_of=[['name', 'group_id']],
