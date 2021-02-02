@@ -1206,17 +1206,31 @@ EXAMPLES = """
 
 - name: Create dummy interface
   ip_link_device:
-      name: dummy3
-      type: dummy
-      state: present
+    name: dummy3
+    type: dummy
+    state: present
 
 - name: Create bridge
   ip_link_device:
-        device: br0
-        type: bridge
-        bridge_options:
-            ageing_time: 42
-        state: present
+    device: br0
+    type: bridge
+    bridge_options:
+        ageing_time: 42
+    state: present
+
+- name: Create bond
+  ip_link_device:
+    device: bond0
+    type: bond
+    state: present
+    bond_options:
+        mode: 802.3ad
+        lacp_rate: fast
+- name: Add device to bond
+  ip_link_device_attribute:  # it's a different module!
+    name: eth3
+    master: bond
+
 """
 
 RETURN = """
