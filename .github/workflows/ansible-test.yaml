@@ -19,8 +19,12 @@ jobs:
         uses: actions/checkout@v2
       - name: Install yamllint
         run: sudo apt install yamllint
-      - name: Lint
+      - name: Install antsibull
+        run: pip install antsibull==0.25.0
+      - name: Lint yaml
         run: yamllint .
+      - name: Lint changelog
+        run: antsibull-lint changelog-yaml ansible_collections/amarao/ip/changelogs/changelog.yaml
 
   test:
     runs-on: ubuntu-latest
