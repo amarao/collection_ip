@@ -1,0 +1,10 @@
+---
+ancestor: null
+releases:
+  0.1.7:
+    changes:
+      minor_changes:
+      - ip_link_device module supports type=bond interfaces
+    fragments:
+    - 0.1.7.yaml
+    release_date: '2021-02-03'
