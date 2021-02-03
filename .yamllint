@@ -8,3 +8,4 @@ ignore: |
   .venv/
   .git/
   .tox/
+  changelogs

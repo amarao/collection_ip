@@ -4,7 +4,7 @@ name: Ansible collection
 'on':
   push:
     branches:
-      - master
+      - '*'
     tags:
       - '*'
   pull_request:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Install yamllint
         run: sudo apt install yamllint
-      - name: Lint
+      - name: Lint yaml
         run: yamllint .
 
   test:
@@ -52,6 +52,8 @@ jobs:
       - name: Try-build by ansible-galaxy
         run: ansible-galaxy collection build
         working-directory: ansible_collections/amarao/ip
+      - name: Lint changelog
+        run: antsibull-lint changelog-yaml ansible_collections/amarao/ip/changelogs/changelog.yaml
 
   build:
     runs-on: ubuntu-latest

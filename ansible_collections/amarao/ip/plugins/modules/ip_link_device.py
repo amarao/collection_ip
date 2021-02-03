@@ -81,7 +81,7 @@ options:
 
     type:
         type: str
-        choices: [bridge, dummy, gre, gretap, veth, vlan, vxlan]
+        choices: [bridge, dummy, gre, gretap, veth, vlan, vxlan, bond]
         description:
             - Type of a new interface to add or delete.
             - Can be specified instead of I(name) or I(group_id)
@@ -834,6 +834,328 @@ options:
                 description:
                     - Enable arptables hooks on the bridge.
 
+    bond_options:
+        type: dict
+        description:
+            - Options, specific for I(type)=C(bond)
+            - Should not be used for any other type.
+            - Most options are for rarely used bond types.
+            - Physical devices can added to a bond by setting them
+              as master for the bond using M(ip_link_device_atrribute).
+              (see examples).
+            - Extensive documentation for linux boding is provided
+              in the Kernel docs at https://www.kernel.org/doc/Documentation/networking/bonding.txt
+
+        suboptions:
+            mode:
+                type: str
+                choices:
+                    - balance-rr
+                    - active-backup
+                    - balance-xor
+                    - broadcast
+                    - 802.3ad
+                    - balance-tlb
+                    - balance-alb
+                description:
+                    - Mode to use for bond management.
+                    - Default (kernel-specific) mode is used if omitted.
+                    - Must be supported by underlaying device type.
+                    - Use of C(802.3ad) is recommended for most cases.
+
+            active_slave:
+                type: str
+                description:
+                    - Active slave device name.
+                    - Device should exists and prior to call.
+                    - Device must be in UP state to be selected as active slave.
+                    - Supported for I(mode)=C(active-backup), C(balance-alb),
+                      C(balance-tlb) modes.
+
+            clear_active_slave:
+                type: bool
+                description:
+                    - Set 'clear_active_slave' option when creating bond interface.
+                    - Value C(false) should not be used.
+
+            miimon:
+                type: int
+                description:
+                    - MII (link) monitoring frequiency in milliseconds.
+                    - Value zero disables monitoring.
+                    - Default (kernel) value is C(0).
+
+            updelay:
+                type: int
+                description:
+                    - Time before enabling slave after link recovery.
+                    - Value is in milliseconds.
+                    - Valid only if miimon active.
+                    - Must be a multiple of miimon value.
+                    - Default (kernel) value is C(0).
+
+            downdelay:
+                type: int
+                description:
+                    - Time before disabling slave after link failure.
+                    - Value is in milliseconds.
+                    - Valid only if miimon active.
+                    - Must be a multiple of miimon value.
+                    - Default (kernel) value is C(0).
+
+            use_carrier:
+                type: bool
+                description:
+                    - Value C(True) uses netif_carrier_ok()
+                    - Value C(False) uses ethtool ioctls.
+                    - Defalut (kernel) value is C(True)
+
+            arp_interval:
+                type: int
+                description:
+                    - ARP link monitor frequency.
+                    - Value is in milliseconds.
+                    - Value C(0) disables ARP monitoring.
+                    - Default (kernel) value is C(0).
+
+            arp_validate:
+                type: str
+                choices:
+                    - "none"
+                    - "0"
+                    - active
+                    - "1"
+                    - all
+                    - "3"
+                    - filter
+                    - "4"
+                    - filter_active
+                    - "5"
+                    - filter_bacup
+                    - "6"
+                description:
+                    - Control if ARP replies should be validated/filtered or not.
+                    - C("none") or C("0") disable validation
+                    - C(active) or C("1") validates only for active slave.
+                    - C(backup) or C("2") validates only for backup slaves.
+                    - C(all) or C("3") validates for all slaves.
+                    - C(filter) or C("4") filters on all slaves.
+                    - C(filter_active) or C("5") filters on active slaves.
+                    - C(filter_backup) or C("6") filters only on backup slaves.
+
+            arp_all_targets:
+                type: str
+                choices: [any, "0", all, "1"]
+                description:
+                    - Specifies the quantity of arp_ip_targets that must be reachable
+                      in order for the ARP monitor to consider a slave as being up.
+                    - C(any) or C("0") consider the slave up only when any of
+                      the arp_ip_targets is reachable.
+                    - C(all) or C("1") consider the slave up only when all of
+                      the arp_ip_targets are reachable.
+
+            arp_ip_target:
+                type: list
+                elements: str
+                description:
+                    - IP addresses to use as ARP monitoring peers when
+                      I(arp_interval) is > 0.
+                    - Specify these values in ddd.ddd.ddd.ddd format.
+                    - At least one IP address must be given for ARP monitoring
+                      to function.
+                    - The maximum number of targets that can be specified is 16.
+
+            primary:
+                type: str
+                description:
+                    - Name of primary device for I(mode) C(active-backup),
+                      C(balance-tlb), C(balance-alb).
+                    - Device should exists prior to call.
+                    - The specified device will always be the
+                      active slave while it is available.
+                    - Only when the primary is offline
+
+            primary_reselect:
+                type: str
+                choices:
+                    - always
+                    - "0"
+                    - better
+                    - "1"
+                    - failure
+                    - "2"
+                description:
+                  - Reselection policy for the primary slave.
+                  - C(always) or C("0") makes primary slave to become
+                    the active slave whenever it comes back up.
+                  - C(better) or C("1") makes primary slave to become
+                    the active slave when it comes back up, if the speed
+                    and duplex of the primary slave is better than
+                    the speed and duplex of the current active slave.
+                  - C(failure) or C("2") makes  slave to become
+                    the active slave only if the current active slave
+                    fails and the primary slave is up.
+                  - Default (kernel) value is C(always).
+            fail_over_mac:
+                type: str
+                choices:
+                    - "none"
+                    - "0"
+                    - "active"
+                    - "1"
+                    - "follow"
+                    - "2"
+                description:
+                    - Specifies whether active-backup mode should set all slaves to
+                      the same MAC address at enslavement (the traditional
+                      behavior), or, when enabled, perform special handling of the
+                      bond's MAC address in accordance with the selected policy.
+                    - C("none") or C("0") disables fail_over_mac, and causes
+                      bonding to set all slaves of an active-backup bond to
+                      the same MAC address at enslavement time.
+                    - C("active") or C("1") makes the MAC address of the bond
+                      to always  be the MAC address of the currently active slave.
+                      The MAC address of the slaves is not changed; instead, the MAC
+                      address of the bond changes during a failover.
+            xmit_hash_policy:
+                type: str
+                choices: [layer2, layer2+3, layer3+4, encap2+3, encap3+4]
+                description:
+                    - Selects the transmit hash policy to use for slave selection in
+                      I(mode) C(balance-xor), C(802.3ad), and C(active-tlb).
+                    - C(layer2) uses XOR of hardware MAC addresses and packet type ID
+                      field to generate the hash. This algorithm is 802.3ad compliant.
+                    - C(layer2+3) uses a combination of layer2 and layer3 protocol
+                      information to generate the hash. This algorithm is 802.3ad compliant.
+                    - C(layer3+4) uses upper layer protocol information,
+                      when available, to generate the hash. This algorithm is not
+                      fully 802.3ad compliant.  It may causes packets
+                      striped across two interfaces.  This may result in out
+                      of order delivery.
+                    - C(encap2+3) uses the same formula as layer2+3 but it
+                      relies on skb_flow_dissect to obtain the header fields
+                      which might result in the use of inner headers if an
+                      encapsulation protocol is used.
+                    - C(encap3+4) uses the same formula as layer3+4 but it
+                      relies on skb_flow_dissect to obtain the header fields
+                      which might result in the use of inner headers if an
+                      encapsulation protocol is used.
+            resend_igmp:
+                type: int
+                description:
+                    - Number of IGMP membership reports to be issued after
+                      a failover event.
+                    - Value from C(0) to C(255).
+                    - The kernel default is C(1).
+                    - C(0) prevents the IGMP membership report from
+                      being issued.
+            num_grat_arp:
+                type: int
+                description:
+                    - Specify the number of peer notifications (gratuitous ARPs and
+                      unsolicited IPv6 Neighbor Advertisements) to be issued after a
+                      failover event.
+                    - I(num_grat_arp) can be used instead of num_unsol_na option
+                      for IPv6 networks.
+                    - Valid values are from C(0) to C(255).
+                    - Default (kernel) value is C(1).
+            all_slaves_active:
+                type: bool
+                description:
+                    - Specifies that duplicate frames (received on inactive ports) should be
+                      dropped C(false) or delivered C(true).
+                    - Default (kernel) value is C(false).
+            min_links:
+                type: int
+                description:
+                    - Minimum number of member ports that must be up (link-up state) before
+                      marking the bond device as up (carrier on).
+                    - Default (kernel) value is 0.
+                    - Value C(1) has same effect as C(0).
+            lp_interval:
+                type: int
+                description:
+                    - Specifies the number of seconds between instances where the bonding
+                      driver sends learning packets to each slaves peer switch.
+                    - Valid only for I(mode) C(balance-tlb) and C(balance-alb).
+                    - Valid vaues are in range from C(1) to C(2147483647).
+                    - Default (kernel) value is C(1).
+            packets_per_slave:
+                type: int
+                description:
+                    - Specify the number of packets to transmit through a slave before
+                      moving to the next one.
+                    - When value is C(0) then a slave is chosen at random.
+                    - Valid values are from C(0) to C(65535).
+                    - Default (kernel) value is C(1).
+                    - Can be used only in I(mode)=C(balance-rr).
+            tlb_dynamic_lb:
+                type: bool
+                description:
+                    - Specifies if dynamic shuffling of flows is enabled.
+                    - Can be used only for I(mode)=C(balance-tlb).
+                    - Default (kernel) value is C(true).
+            lacp_rate:
+                type: str
+                choices:
+                    - slow
+                    - "0"
+                    - fast
+                    - "1"
+                description:
+                    - the rate ito ask link partner to transmit LACPDU packets.
+                    - Valid only for I(mode)=C(802.3ad).
+                    - C(slow) is the same as C("0").
+                    - C(fast) is the same as C("1").
+                    - Default (kernel) value is C(slow).
+            ad_select:
+                type: str
+                choices:
+                    - stable
+                    - "0"
+                    - bandwidth
+                    - "1"
+                    - count
+                    - "2"
+                description:
+                    - Specifies aggregation selection logic to use.
+                    - Valid only for I(mode)=C(802.3ad).
+                    - C(stable) or C("0") makes the active aggregator
+                      to be chosen by largest aggregate bandwidth
+                      only when all slaves of the active aggregator are
+                      down or the active aggregator has no slaves.
+                    - C(bandwidth) or C("1") makes active aggregator
+                      to be chosen by largest aggregate bandwidth.
+                      Reselection occurs on link change.
+                    - C(count) or C("2") makes active aggregator to be
+                      chosen by the largest number of ports (slaves)
+                      on link change.
+            ad_user_port_key:
+                type: int
+                description:
+                    - Specify port key value.
+                    - Valid only for I(mode)=C(802.3ad).
+                    - Valid values are from C(0) to C(1023).
+                    - Composite bit field, bit 0 is specify duplex,
+                      bits 1-5 specify speed and bits 6-15 specify
+                      user-defined values.
+                    - Default (kernel) value is C(0).
+            ad_actor_sys_prio:
+                type: int
+                description:
+                    - System priority for 802.3ad protocol.
+                    - Valid values are from C(0) to C(65535).
+                    - Valid only for I(mode)=C(802.3ad).
+                    - Default (kernel) value is C(65535).
+            ad_actor_system:
+                type: str
+                description:
+                    - mac-address for the actor in protocol
+                      packet exchanges (LACPDUs) for 802.3ad protocol.
+                    - If the value is not given then
+                      system defaults to using the masters'
+                      mac address as actors' system address.
+                    - Valid only for I(mode)=C(802.3ad).
 notes:
     - The module does not check the interface type when checking
       if interface is present or not. I(type) and corresponding options are
@@ -884,17 +1206,31 @@ EXAMPLES = """
 
 - name: Create dummy interface
   ip_link_device:
-      name: dummy3
-      type: dummy
-      state: present
+    name: dummy3
+    type: dummy
+    state: present
 
 - name: Create bridge
   ip_link_device:
-        device: br0
-        type: bridge
-        bridge_options:
-            ageing_time: 42
-        state: present
+    device: br0
+    type: bridge
+    bridge_options:
+        ageing_time: 42
+    state: present
+
+- name: Create bond
+  ip_link_device:
+    device: bond0
+    type: bond
+    state: present
+    bond_options:
+        mode: 802.3ad
+        lacp_rate: fast
+- name: Add device to bond
+  ip_link_device_attribute:  # it's a different module!
+    name: eth3
+    master: bond
+
 """
 
 RETURN = """
@@ -1049,6 +1385,35 @@ TYPE_COMMANDS = {
         'nf_call_ip6tables': lambda flag: ['nf_call_iptables', str(int(flag))],
         'nf_call_arptables': lambda flag: [
             'nf_call_arptables', str(int(flag))],
+    },
+    'bond': {
+        "mode": lambda mode: ['mode', mode],
+        "active_slave": lambda dev: ['active_slave', dev],
+        "clear_active_slave": lambda flag: ([], ['clear_active_slave'])[int(flag)],
+        "miimon": lambda msec: ['miimon', str(msec)],
+        "updelay": lambda msec: ['updelay', str(msec)],
+        "downdelay": lambda msec: ['downdelay', str(msec)],
+        "use_carrier": lambda flag: ['use_carrier', ('0', '1')[int(flag)]],
+        "arp_interval": lambda msec: ['arp_interval', str(msec)],
+        "arp_validate": lambda val: ['arp_validate', str(val)],
+        "arp_all_targets": lambda val: ['arp_all_targets', str(val)],
+        "arp_ip_target": lambda tgts: ['arp_ip_target', ','.join(tgts)],
+        "primary": lambda dev: ['primary', dev],
+        "primary_reselect": lambda param: ['primary_reselect', param],
+        "fail_over_mac": lambda param: ['fail_over_mac', param],
+        "xmit_hash_policy": lambda param: ['xmit_hash_policy', param],
+        "resend_igmp": lambda cnt: ['resend_igmp', str(cnt)],
+        "num_grat_arp": lambda cnt: ['num_grat_arp', str(cnt)],
+        "all_slaves_active": lambda flag: ['all_slaves_active', ('0', '1')[int(flag)]],
+        "min_links": lambda cnt: ['min_links', str(cnt)],
+        "lp_interval": lambda msec: ['lp_interval', str(msec)],
+        "packets_per_slave": lambda cnt: ['packets_per_slave', int(cnt)],
+        "tlb_dynamic_lb": lambda flag: ['tlb_dynamic_lb', ('0', '1')[int(flag)]],
+        "lacp_rate": lambda param: ['lacp_rate', str(param)],
+        "ad_select": lambda param: ['ad_select', str(param)],
+        "ad_user_port_key": lambda val: ['ad_user_port_key', str(val)],
+        "ad_actor_sys_prio": lambda val: ['ad_actor_sys_prio', str(val)],
+        "ad_actor_system": lambda addr: ['ad_actor_system', str(addr)],
     }
 }
 
@@ -1223,7 +1588,8 @@ def main():
             'search_namespaces': {'type': 'list'},
             'state': {'choices': ['present', 'absent'], 'required': True},
             'type': {'choices': [
-                'veth', 'vlan', 'vxlan', 'gre', 'gretap', 'dummy', 'bridge'
+                'veth', 'vlan', 'vxlan', 'gre',
+                'gretap', 'dummy', 'bridge', 'bond'
             ]},
             'link': {},
             'txqueuelen': {'type': 'int'},
@@ -1241,7 +1607,7 @@ def main():
             'gre_options': {'type': 'dict'},
             'gretap_options': {'type': 'dict'},
             'bridge_options': {'type': 'dict'},
-
+            'bond_options': {'type': 'dict'},
         },
         supports_check_mode=True,
         mutually_exclusive=[
@@ -1249,7 +1615,8 @@ def main():
             ['name', 'group_id'],
             [
                 'vlan_options', 'vxlan_options', 'gre_options',
-                'gretap_options', 'veth_options', 'bridge_options'
+                'gretap_options', 'veth_options', 'bridge_options',
+                'bond_options'
             ]
         ],
         required_one_of=[['name', 'group_id']],
