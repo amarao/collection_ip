@@ -1,4 +1,4 @@
-ansible==2.9.11
+ansible==2.9.22
 wheel
 antsibull==0.25.0
 antsibull-changelog==0.9.0
