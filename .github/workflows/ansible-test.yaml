@@ -34,6 +34,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install kernel extra modules
+        run: sudo apt-get install -y linux-modules-extra-$(uname -r)
       - name: Sanity tests with dependencies
         run: ansible-test sanity --requirements --python 3.8
         working-directory: ansible_collections/amarao/ip
