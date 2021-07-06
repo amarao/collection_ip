@@ -3,13 +3,7 @@ name: Ansible collection
 
 'on':
   push:
-    branches:
-      - '*'
-    tags:
-      - '*'
-  pull_request:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   lint:
