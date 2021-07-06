@@ -18,6 +18,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    env:
+      ANSIBLE_FORCE_COLOR: "True"
     steps:
       - name: Log github.ref
         run: echo ${{ github.ref }}
