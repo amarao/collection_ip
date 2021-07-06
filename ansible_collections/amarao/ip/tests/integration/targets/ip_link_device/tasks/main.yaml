@@ -13,6 +13,12 @@
     - name: Install iproute2 on non-debian distro
       package: name=iproute2 state=present
       when: ansible_os_family != 'Debian' and ip_ver.rc != 0
+    - name: install modules
+      shell: |
+        modprobe vcan || true
+        modprobe vxlan || true
+        modprobe veth || true
+      ignore_errors: true
 
     # TEST1: Create veth interface and test for idempotency/check_mode
     # stages:
