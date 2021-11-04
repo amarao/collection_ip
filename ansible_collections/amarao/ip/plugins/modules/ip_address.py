@@ -7,13 +7,16 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
+ANSIBLE_METADATA = {
+    "metadata_version": "1.1",
+    "status": ["preview"],
+    "supported_by": "community",
+}
 
 DOCUMENTATION = """
 ---
@@ -150,7 +153,7 @@ EXAMPLES = """
     state: flush
 """
 
-RETURN = r''' # '''
+RETURN = r""" # """
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -160,7 +163,7 @@ from ansible.module_utils._text import to_text
 __metaclass__ = type
 
 
-BOOLS = ['off', 'on']
+BOOLS = ["off", "on"]
 
 
 class Address(object):
@@ -171,47 +174,42 @@ class Address(object):
         self.check_mode = module.check_mode
         for param_name, param_value in self.module.params.items():
             setattr(self, param_name, param_value)
-        if self.state != 'flush' and not self.address:
-            self.module.fail_json(
-                msg=to_text(
-                    'State=present/absent require address.'
-                )
-            )
+        if self.state != "flush" and not self.address:
+            self.module.fail_json(msg=to_text("State=present/absent require address."))
         if self.address:
-            if '/' not in self.address:
-                if ':' in self.address:  # IPv6
-                    self.address += '/128'
-                elif '.' in self.address:  # IPv4
-                    self.address += '/32'
-        prefix_length = self.address.split('/')[1]
-        if '.' in prefix_length:
+            if "/" not in self.address:
+                if ":" in self.address:  # IPv6
+                    self.address += "/128"
+                elif "." in self.address:  # IPv4
+                    self.address += "/32"
+                else:
+                    module.fail_json("Incorrect address format: %s" % self.address)
+        else:
+            module.fail_json("Empty address: %s" % self.address)
+        prefix_length = self.address.split("/")[1]
+        if "." in prefix_length:
             self.module.fail_json(
-                'Dot found in prefix length. '
-                'Network masks are not supported, '
-                'use CIDR notation (a.b.c.d/z)'
+                "Dot found in prefix length. "
+                "Network masks are not supported, "
+                "use CIDR notation (a.b.c.d/z)"
             )
 
     def _exec(self, namespace, cmd, not_found_is_ok=False):
         if namespace:
             return self._exec(
-                None,
-                ['ip', 'netns', 'exec', namespace] + cmd,
-                not_found_is_ok
+                None, ["ip", "netns", "exec", namespace] + cmd, not_found_is_ok
             )
         # if self.type=='gre' and 'add' in cmd:
         #     self.module.fail_json(msg=to_text(cmd))
         rc, out, err = self.module.run_command(cmd)
         if rc != 0:
-            self.module.fail_json(
-                msg=to_text(err),
-                failed_command=' '.join(cmd)
-            )
+            self.module.fail_json(msg=to_text(err), failed_command=" ".join(cmd))
         return out
 
     def _get_addresses(self):
-        cmd = ['ip', '-o', 'address', 'show', 'dev', self.name]
+        cmd = ["ip", "-o", "address", "show", "dev", self.name]
         stdout = self._exec(self.namespace, cmd)
-        for line in stdout.split('\n'):
+        for line in stdout.split("\n"):
             pieces = line.split()
             if len(pieces) < 4:
                 continue
@@ -221,45 +219,45 @@ class Address(object):
     def _addr_part(self):
         snippet = [self.address]
         if self.peer:
-            snippet += ['peer', str(self.peer)]
+            snippet += ["peer", str(self.peer)]
         if self.broadcast:
-            snippet += ['broadcast', str(self.broadcast)]
+            snippet += ["broadcast", str(self.broadcast)]
         if self.label:
-            snippet += ['label', str(self.label)]
+            snippet += ["label", str(self.label)]
         if self.scope:
-            snippet += ['scope', str(self.scope)]
+            snippet += ["scope", str(self.scope)]
         if self.metric:  # contradiction in man!
-            snippet += ['metric', str(self.metric)]
+            snippet += ["metric", str(self.metric)]
         return snippet
 
     def _lifetime_part(self):
         snippet = []
         if self.valid_lft:
-            snippet += ['valid_lft', str(self.valid_lft)]
+            snippet += ["valid_lft", str(self.valid_lft)]
         if self.preferred_lft:
-            snippet += ['preferred_lft', str(self.preferred_lft)]
+            snippet += ["preferred_lft", str(self.preferred_lft)]
         return snippet
 
     def _confflag_part(self):
         snippet = []
         if self.home is True:
-            snippet += ['home']
+            snippet += ["home"]
         if self.dad is False:
-            snippet += ['nodad']
+            snippet += ["nodad"]
         if self.prefixroute is False:
-            snippet += ['noprefixroute']
+            snippet += ["noprefixroute"]
         return snippet
 
     def _add(self):
-        cmd = ['ip', 'address', 'add']
+        cmd = ["ip", "address", "add"]
         cmd += self._addr_part()
-        cmd += ['dev', self.name]
+        cmd += ["dev", self.name]
         cmd += self._lifetime_part()
         cmd += self._confflag_part()
         self._exec(self.namespace, cmd)
 
     def _delete(self):
-        cmd = ['ip', 'address', 'delete', self.address, 'dev', self.name]
+        cmd = ["ip", "address", "delete", self.address, "dev", self.name]
         self._exec(self.namespace, cmd)
 
     def flush(self):
@@ -267,9 +265,9 @@ class Address(object):
         if addresses:
             if self.check_mode:
                 self.module.exit_json(changed=True)
-            cmd = ['ip', '-statistics', 'address', 'flush', 'dev', self.name]
+            cmd = ["ip", "-statistics", "address", "flush", "dev", self.name]
             res = self._exec(self.namespace, cmd)
-            changed = not ('Nothing to flush' in res)
+            changed = not ("Nothing to flush" in res)
             self.module.exit_json(changed=changed)
         self.module.exit_json(changed=False)
 
@@ -290,11 +288,11 @@ class Address(object):
         self.module.exit_json(changed=False)
 
     def run(self):
-        if self.state == 'flush':
+        if self.state == "flush":
             self.flush()
-        elif self.state == 'present':
+        elif self.state == "present":
             self.present()
-        elif self.state == 'absent':
+        elif self.state == "absent":
             self.absent()
         else:
             self.module.fail_json(
@@ -306,23 +304,20 @@ def main():
     """Entry point."""
     module = AnsibleModule(
         argument_spec={
-            'name': {'aliases': ['device'], 'required': True},
-            'namespace': {},
-            'state': {
-                'choices': ['present', 'absent', 'flush'],
-                'default': 'present'
-            },
-            'address': {},
-            'peer': {},
-            'broadcast': {},
-            'label': {},
-            'scope': {},
-            'metric': {'type': 'int'},
-            'valid_lft': {},
-            'preferred_lft': {},
-            'home': {'type': 'bool'},
-            'dad': {'type': 'bool'},
-            'prefixroute': {'type': 'bool'},
+            "name": {"aliases": ["device"], "required": True},
+            "namespace": {},
+            "state": {"choices": ["present", "absent", "flush"], "default": "present"},
+            "address": {},
+            "peer": {},
+            "broadcast": {},
+            "label": {},
+            "scope": {},
+            "metric": {"type": "int"},
+            "valid_lft": {},
+            "preferred_lft": {},
+            "home": {"type": "bool"},
+            "dad": {"type": "bool"},
+            "prefixroute": {"type": "bool"},
         },
         supports_check_mode=True,
     )
@@ -331,5 +326,5 @@ def main():
     link_dev.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
