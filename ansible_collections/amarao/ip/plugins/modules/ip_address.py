@@ -54,11 +54,12 @@ options:
 
     state:
         type: str
-        choices: [present, absent, flush]
+        choices: [present, absent, flush, query]
         default: present
         description:
             - Should address be addedd or removed.
             - C(flush) removes all addresses from the interface.
+            - C(query) return list of ip addresses on interface (with prefixes).
 
     peer:
         type: str
@@ -153,7 +154,20 @@ EXAMPLES = """
     state: flush
 """
 
-RETURN = r""" # """
+RETURN = """
+addresses_v4:
+    description: A list of all IPv4 addresses on the I(name) interface
+        with prefix (f.e. 127.0.0.1/8) when called with I(state)=C(query)
+    returned: success
+    type: list
+    elements: str
+addresses_v6:
+    description: A list of all IPv6 addresses on the I(name) interface
+        with prefix (f.e. 'fe80::3/64') when called with I(state)=C(query)
+    returned: success
+    type: list
+    elements: str
+"""
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -174,7 +188,7 @@ class Address(object):
         self.check_mode = module.check_mode
         for param_name, param_value in self.module.params.items():
             setattr(self, param_name, param_value)
-        if self.state != "flush" and not self.address:
+        if self.state in ("present", "absent") and not self.address:
             self.module.fail_json(msg=to_text("State=present/absent require address."))
         if self.address:
             if "/" not in self.address:
@@ -191,7 +205,7 @@ class Address(object):
             self.module.fail_json(
                 "Dot found in prefix length. "
                 "Network masks are not supported, "
-                "use CIDR notation (a.b.c.d/z)"
+                "use CIDR notation with prefixlen (f.e. a.b.c.d/z)"
             )
 
     def _exec(self, namespace, cmd, not_found_is_ok=False):
@@ -199,8 +213,6 @@ class Address(object):
             return self._exec(
                 None, ["ip", "netns", "exec", namespace] + cmd, not_found_is_ok
             )
-        # if self.type=='gre' and 'add' in cmd:
-        #     self.module.fail_json(msg=to_text(cmd))
         rc, out, err = self.module.run_command(cmd)
         if rc != 0:
             self.module.fail_json(msg=to_text(err), failed_command=" ".join(cmd))
@@ -287,6 +299,16 @@ class Address(object):
             self.module.exit_json(changed=True)
         self.module.exit_json(changed=False)
 
+    def query(self):
+        addr_4 = []
+        addr_6 = []
+        for address in self._get_addresses():
+            if ":" in address:
+                addr_6.append(address)
+            else:
+                addr_4.append(address)
+        self.module.exit_json(addresses_v4=addr_4, addresses_v6=addr_6, changed=False)
+
     def run(self):
         if self.state == "flush":
             self.flush()
@@ -294,6 +316,8 @@ class Address(object):
             self.present()
         elif self.state == "absent":
             self.absent()
+        elif self.state == "query":
+            self.query()
         else:
             self.module.fail_json(
                 msg=to_text("Unknown state: %s" % repr(self.state)),
@@ -306,7 +330,10 @@ def main():
         argument_spec={
             "name": {"aliases": ["device"], "required": True},
             "namespace": {},
-            "state": {"choices": ["present", "absent", "flush"], "default": "present"},
+            "state": {
+                "choices": ["present", "absent", "flush", "query"],
+                "default": "present",
+            },
             "address": {},
             "peer": {},
             "broadcast": {},
