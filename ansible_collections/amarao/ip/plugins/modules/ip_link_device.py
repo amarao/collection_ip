@@ -20,7 +20,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ip_link_device
-version_added: "2.10"
+version_added: "0.0.1"
 author: "George Shuklin (@amarao)"
 short_description: Create or delete network interfaces in Linux
 requirements: [iproute2]
@@ -81,7 +81,7 @@ options:
 
     type:
         type: str
-        choices: [bridge, dummy, gre, gretap, veth, vlan, vxlan, bond]
+        choices: [bridge, dummy, gre, gretap, veth, vlan, vxlan, bond, vrf]
         description:
             - Type of a new interface to add or delete.
             - Can be specified instead of I(name) or I(group_id)
@@ -1156,6 +1156,19 @@ options:
                       system defaults to using the masters'
                       mac address as actors' system address.
                     - Valid only for I(mode)=C(802.3ad).
+
+    vrf_options:
+        type: dict
+        description:
+            - Options, specific for I(type)=C(vrf)
+            - Should not be used for any other type.
+            - VRF documentation is available at https://docs.kernel.org/networking/vrf.html
+
+        suboptions:
+            table:
+                type: str
+                description:
+                    - ID of the routing table used for VRF.
 notes:
     - The module does not check the interface type when checking
       if interface is present or not. I(type) and corresponding options are
@@ -1226,11 +1239,24 @@ EXAMPLES = """
     bond_options:
         mode: 802.3ad
         lacp_rate: fast
+
 - name: Add device to bond
   ip_link_device_attribute:  # it's a different module!
     name: eth3
     master: bond
 
+- name: Create vrf
+  ip_link_device:
+    device: blue
+    type: vrf
+    state: present
+    vrf_options:
+        table: 42
+
+- name: Enslave vxlan
+  ip_link_device_attribute:  # it's a different module!
+    device: vxlan.42
+    master: blue
 """
 
 RETURN = """
@@ -1414,6 +1440,9 @@ TYPE_COMMANDS = {
         "ad_user_port_key": lambda val: ['ad_user_port_key', str(val)],
         "ad_actor_sys_prio": lambda val: ['ad_actor_sys_prio', str(val)],
         "ad_actor_system": lambda addr: ['ad_actor_system', str(addr)],
+    },
+    'vrf': {
+        "table": lambda table_id: ['table', str(table_id)],
     }
 }
 
@@ -1589,7 +1618,8 @@ def main():
             'state': {'choices': ['present', 'absent'], 'required': True},
             'type': {'choices': [
                 'veth', 'vlan', 'vxlan', 'gre',
-                'gretap', 'dummy', 'bridge', 'bond'
+                'gretap', 'dummy', 'bridge', 'bond',
+                'vrf'
             ]},
             'link': {},
             'txqueuelen': {'type': 'int'},
@@ -1608,6 +1638,7 @@ def main():
             'gretap_options': {'type': 'dict'},
             'bridge_options': {'type': 'dict'},
             'bond_options': {'type': 'dict'},
+            'vrf_options': {'type': 'dict'},
         },
         supports_check_mode=True,
         mutually_exclusive=[
@@ -1616,7 +1647,7 @@ def main():
             [
                 'vlan_options', 'vxlan_options', 'gre_options',
                 'gretap_options', 'veth_options', 'bridge_options',
-                'bond_options'
+                'bond_options', 'vrf_options'
             ]
         ],
         required_one_of=[['name', 'group_id']],
