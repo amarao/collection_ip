@@ -21,7 +21,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = """
 ---
 module: ip_address
-version_added: "2.10"
+version_added: "0.0.1"
 author: "George Shuklin (@amarao)"
 short_description: Create or delete IP addresses on interfaces
 requirements: [iproute2]

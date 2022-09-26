@@ -531,3 +531,29 @@
         - 'ip link del veth42'
         - 'ip link del bond42'
       failed_when: false
+
+
+# TEST10 created vrf interface
+- name: TEST10 - vrf creation
+  tags: [test10]
+  become: true
+  block:
+    - name: TEST10, create vrf
+      ip_link_device:
+        device: vrf-blue
+        type: vrf
+        state: present
+        vrf_options:
+          table: 42
+    - name: TEST10, get results
+      command: ip -d link show dev vrf-blue
+      register: ip_output
+    - name: TEST9, check results
+      assert:
+        that:
+          - "'vrf-blue' in ip_output.stdout"
+          - "'table 42' in ip_output.stdout"
+  always:
+    - name: TEST10, cleanup
+      command: ip link del vrf-blue
+      failed_when: false

@@ -24,7 +24,7 @@ ANSIBLE_METADATA = {'metadata_version': '1.1',
 DOCUMENTATION = """
 ---
 module: ip_link_device_attribute
-version_added: "2.10"
+version_added: "0.0.1"
 author: "George Shuklin (@amarao)"
 short_description: Set link-level properties for network interfaces for Linux
 requirements: [iproute2]
