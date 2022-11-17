@@ -23,32 +23,41 @@ jobs:
     steps:
       - name: Log github.ref
         run: echo ${{ github.ref }}
+
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up Python 3.8
+
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8==4.0.0 pytest==6.2.4
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
       - name: Install kernel extra modules
         run: sudo apt-get install -y linux-modules-extra-$(uname -r)
+
       - name: Sanity tests with dependencies
-        run: ansible-test sanity --requirements --python 3.8
+        run: ansible-test sanity --requirements --python 3.9
         working-directory: ansible_collections/amarao/ip
+
       - name: Unit tests with dependencies
-        run: ansible-test units --requirements --python 3.8
+        run: ansible-test units --requirements --python 3.9
         working-directory: ansible_collections/amarao/ip
+
       - name: Integration tests with dependencies
-        run: ansible-test integration --requirements --python 3.8 --local --allow-root
+        run: ansible-test integration --requirements --python 3.9 --local --allow-root
         working-directory: ansible_collections/amarao/ip
+
       - name: Cleanup
         run: rm -fr ansible_collections/amarao/ip/tests/output ansible_collections/amarao/ip/.pytest_cache
+
       - name: Try-build by ansible-galaxy
         run: ansible-galaxy collection build
+
         working-directory: ansible_collections/amarao/ip
       - name: Lint changelog
         run: antsibull-lint changelog-yaml ansible_collections/amarao/ip/changelogs/changelog.yaml
