@@ -844,7 +844,7 @@ options:
             - Should not be used for any other type.
             - Most options are for rarely used bond types.
             - Physical devices can added to a bond by setting them
-              as master for the bond using M(ip_link_device_atrribute).
+              as master for the bond using M(amarao.ip.ip_link_device_atrribute).
               (see examples).
             - Extensive documentation for linux boding is provided
               in the Kernel docs at https://www.kernel.org/doc/Documentation/networking/bonding.txt
@@ -1179,7 +1179,7 @@ notes:
       interface with I(name) found and I(state)=C(present).
     - This module does not change parameters for existing interfaces,
       all type-specific options are used only for new interfaces.
-    - See M(ip_link_device_attribute) module for updating attributes of
+    - See M(amarao.ip.ip_link_device_attribute) module for updating attributes of
       an existing interface.
     - Some type-specific options may have additional restrictions which are not
       described in the module documentation. Check "man ip-link" for details.
@@ -1631,7 +1631,7 @@ def main():
             "name": {"aliases": ["device"]},
             "group_id": {},
             "namespace": {},
-            "search_namespaces": {"type": "list"},
+            "search_namespaces": {"type": "list", "elements": "str"},
             "state": {"choices": ["present", "absent"], "required": True},
             "type": {
                 "choices": [
@@ -1667,7 +1667,6 @@ def main():
         },
         supports_check_mode=True,
         mutually_exclusive=[
-            ["group_id", "group"],
             ["name", "group_id"],
             [
                 "vlan_options",
