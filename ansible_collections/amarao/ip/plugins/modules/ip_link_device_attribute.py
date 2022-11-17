@@ -13,13 +13,16 @@
 # It's more complicated than just simple
 # 'apply this ip link command to that interface'
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
+ANSIBLE_METADATA = {
+    "metadata_version": "1.1",
+    "status": ["preview"],
+    "supported_by": "community",
+}
 
 DOCUMENTATION = """
 ---
@@ -309,21 +312,24 @@ class Link(object):
     """Interface to 'link' object."""
 
     params_list = [  # module paramtes needed special treatment
-        'group_id', 'namespace', 'name', 'netns'
+        "group_id",
+        "namespace",
+        "name",
+        "netns",
     ]
     knob_cmds = {  # attributes we may change by calling 'ip'
-        'address': lambda addr: ['address', str(addr)],
-        'alias': lambda alias: ['alias', str(alias)],
-        'arp': lambda is_arp: ['arp', ['off', 'on'][is_arp]],
-        'broadcast': lambda addr: ['broadcast', addr],
-        'group': lambda group: ['group', str(group)],
-        'mtu': lambda mtu: ['mtu', str(mtu)],
-        'multicast': lambda is_mc: ['multicast', ['off', 'on'][is_mc]],
-        'promisc': lambda is_prms: ['promisc', ['off', 'on'][is_prms]],
-        'txqueuelen': lambda qlen: ['txqueuelen', str(qlen)],
-        'state': lambda state: [state],
-        'master': lambda master: ['master', master],
-        'nomaster': lambda nomaster: ['nomaster'] if nomaster else [],
+        "address": lambda addr: ["address", str(addr)],
+        "alias": lambda alias: ["alias", str(alias)],
+        "arp": lambda is_arp: ["arp", ["off", "on"][is_arp]],
+        "broadcast": lambda addr: ["broadcast", addr],
+        "group": lambda group: ["group", str(group)],
+        "mtu": lambda mtu: ["mtu", str(mtu)],
+        "multicast": lambda is_mc: ["multicast", ["off", "on"][is_mc]],
+        "promisc": lambda is_prms: ["promisc", ["off", "on"][is_prms]],
+        "txqueuelen": lambda qlen: ["txqueuelen", str(qlen)],
+        "state": lambda state: [state],
+        "master": lambda master: ["master", master],
+        "nomaster": lambda nomaster: ["nomaster"] if nomaster else [],
     }
 
     def __init__(self, module):
@@ -335,22 +341,20 @@ class Link(object):
         for param in self.params_list:
             setattr(self, param, module.params[param])
         if self.name:
-            self.id_postfix = ['dev', self.name]
+            self.id_postfix = ["dev", self.name]
         if self.group_id:
-            self.id_postfix = ['group', self.group_id]
-        if self.knobs['address']:
-            self.knobs['address'] = self.knobs['address'].lower()
-        if self.knobs['broadcast']:
-            self.knobs['broadcast'] = self.knobs['broadcast'].lower()
-        if self.knobs['state']:
-            self.knobs['state'] = self.knobs['state'].lower()
+            self.id_postfix = ["group", self.group_id]
+        if self.knobs["address"]:
+            self.knobs["address"] = self.knobs["address"].lower()
+        if self.knobs["broadcast"]:
+            self.knobs["broadcast"] = self.knobs["broadcast"].lower()
+        if self.knobs["state"]:
+            self.knobs["state"] = self.knobs["state"].lower()
 
     def _exec(self, namespace, cmd, not_found_is_ok=False):
         if namespace:
             return self._exec(
-                None,
-                ['ip', 'netns', 'exec', namespace] + cmd,
-                not_found_is_ok
+                None, ["ip", "netns", "exec", namespace] + cmd, not_found_is_ok
             )
         rc, out, err = self.module.run_command(cmd)
         if rc != 0:
@@ -360,22 +364,16 @@ class Link(object):
                 if self.name:
                     not_found_msg = 'Device "%s" does not exist' % self.name
                     if not_found_msg in err:
-                        return ''
-            self.module.fail_json(
-                msg=to_text(err),
-                failed_command=' '.join(cmd)
-            )
+                        return ""
+            self.module.fail_json(msg=to_text(err), failed_command=" ".join(cmd))
         return out
 
     def _split_ifline(self, ifstring):
-        _ifnum, ifname_raw, raw_data = ifstring.split(':', 2)
-        ifname = ifname_raw.split('@')[0].strip()
-        data = list(map(str.split, raw_data.split('\\')))
+        _ifnum, ifname_raw, raw_data = ifstring.split(":", 2)
+        ifname = ifname_raw.split("@")[0].strip()
+        data = list(map(str.split, raw_data.split("\\")))
 
-        retval = {
-            'name': ifname,
-            'flags': data[0].pop(0).strip('<>').split(',')
-        }
+        retval = {"name": ifname, "flags": data[0].pop(0).strip("<>").split(",")}
         for snip in data:
             while snip:
                 key = snip.pop(0)
@@ -390,61 +388,67 @@ class Link(object):
         if not ifstring:
             return {}
         iface = self._split_ifline(ifstring)
-        flags = iface['flags']
-        multicast = 'MULTICAST' in flags
-        is_up = 'UP' in flags
-        arp = not ('NOARP' in flags)
-        promisc = 'PROMISC' in flags
+        flags = iface["flags"]
+        multicast = "MULTICAST" in flags
+        is_up = "UP" in flags
+        arp = not ("NOARP" in flags)
+        promisc = "PROMISC" in flags
         return {
-            'address': iface.get('link/ether', None),
-            'alias': iface.get('alias', None),
-            'arp': arp,
-            'broadcast': iface.get('brd', None),
-            'group': iface['group'],
-            'mtu': int(iface['mtu']),
-            'multicast': multicast,
-            'name': iface['name'],
-            'promisc': promisc,
-            'txqueuelen': int(iface['qlen']),
-            'state': ['down', 'up'][int(is_up)],
-            'master': iface.get('master', None)
+            "address": iface.get("link/ether", None),
+            "alias": iface.get("alias", None),
+            "arp": arp,
+            "broadcast": iface.get("brd", None),
+            "group": iface["group"],
+            "mtu": int(iface["mtu"]),
+            "multicast": multicast,
+            "name": iface["name"],
+            "promisc": promisc,
+            "txqueuelen": int(iface["qlen"]),
+            "state": ["down", "up"][int(is_up)],
+            "master": iface.get("master", None),
         }
 
     def _get_interfaces_info(self, namespace, not_found_is_ok=False):
         # we can't use json option of ip command
         # because of Centos6.
         # It's so young and so forever.
-        cmd = ['ip', '-o', 'link', 'show'] + self.id_postfix
+        cmd = ["ip", "-o", "link", "show"] + self.id_postfix
         output = self._exec(namespace, cmd, not_found_is_ok)
         interfaces = filter(
-            lambda x: x,
-            map(self._parse_interface, output.strip().split('\n'))
+            lambda x: x, map(self._parse_interface, output.strip().split("\n"))
         )
         return interfaces
 
     def _is_changes_needed_for_interface(self, iface):
         attr_list = [  # address and broadcast are handled separately
-            'alias', 'arp', 'group', 'mtu', 'multicast',
-            'promisc', 'txqueuelen', 'state', 'master'
+            "alias",
+            "arp",
+            "group",
+            "mtu",
+            "multicast",
+            "promisc",
+            "txqueuelen",
+            "state",
+            "master",
         ]
         for attr in attr_list:
             if self.knobs[attr] and self.knobs[attr] != iface[attr]:
                 return True
-        if self.knobs['broadcast'] and \
-                self.knobs['broadcast'] != iface['broadcast']:
-            if not iface['broadcast']:
-                self.module.fail_json(msg=to_text(
-                    'Interace %s can not have broadcast address'
-                ) % (iface['name']))
+        if self.knobs["broadcast"] and self.knobs["broadcast"] != iface["broadcast"]:
+            if not iface["broadcast"]:
+                self.module.fail_json(
+                    msg=to_text("Interace %s can not have broadcast address")
+                    % (iface["name"])
+                )
             return True
-        if self.knobs['address'] and \
-                self.knobs['address'] != iface['address']:
-            if not iface['address']:
-                self.module.fail_json(msg=to_text(
-                    'Interace %s can not have MAC address'
-                ) % (iface['name']))
+        if self.knobs["address"] and self.knobs["address"] != iface["address"]:
+            if not iface["address"]:
+                self.module.fail_json(
+                    msg=to_text("Interace %s can not have MAC address")
+                    % (iface["name"])
+                )
             return True
-        if self.knobs['nomaster'] and iface['master']:
+        if self.knobs["nomaster"] and iface["master"]:
             return True
         return False
 
@@ -452,7 +456,7 @@ class Link(object):
         return any(map(self._is_changes_needed_for_interface, iflist))
 
     def _apply_change(self, knob, value):
-        cmd = ['ip', 'link', 'set'] + self.id_postfix
+        cmd = ["ip", "link", "set"] + self.id_postfix
         cmd += self.knob_cmds[knob](value)
         self._exec(self.namespace, cmd)
 
@@ -464,28 +468,28 @@ class Link(object):
 
     def _get_iface_set(self, namespace):
         iface_list = self._get_interfaces_info(namespace, not_found_is_ok=True)
-        return set(map(lambda x: x['name'], iface_list))
+        return set(map(lambda x: x["name"], iface_list))
 
     def _netns_need_to_move(self):
         """
-            When we need to change netns for the interface(s),
-            there are few scenarios to consider:
-            1. There is target interface in source 'namespace'
-                and not target interface in destination 'netns'
-                    -> change netns for interface
-            2. There is a target interface in srouce 'namespace'
-                and there is a target interface in destination 'netns'
-                    -> Error
-            3. There is no target interface in source 'namespace'
-                and there is a target interface in destination 'netns'
-                    -> no change (in this part)
-            4. There is no target interface in source 'namespace'
-                and there is no target interface in destination 'netns'
-                    -> Error
+        When we need to change netns for the interface(s),
+        there are few scenarios to consider:
+        1. There is target interface in source 'namespace'
+            and not target interface in destination 'netns'
+                -> change netns for interface
+        2. There is a target interface in srouce 'namespace'
+            and there is a target interface in destination 'netns'
+                -> Error
+        3. There is no target interface in source 'namespace'
+            and there is a target interface in destination 'netns'
+                -> no change (in this part)
+        4. There is no target interface in source 'namespace'
+            and there is no target interface in destination 'netns'
+                -> Error
 
-            Additionally, we need to support partial cases with
-            group_id (some of interfaces may be in one namespace
-            and some may be moved already).
+        Additionally, we need to support partial cases with
+        group_id (some of interfaces may be in one namespace
+        and some may be moved already).
         """
         if self.namespace == self.netns:
             return False
@@ -493,12 +497,12 @@ class Link(object):
         dst = self._get_iface_set(self.netns)
         if src.intersection(dst):
             self.module.fail_json(
-                msg='Interfaces %s are in both namespaces' %
-                src.intersection(dst))
+                msg="Interfaces %s are in both namespaces" % src.intersection(dst)
+            )
         if not src and not dst:
             self.module.fail_json(
-                msg='Unable to find interface %s to change namespace' %
-                ' '.join(self.id_postfix)
+                msg="Unable to find interface %s to change namespace"
+                % " ".join(self.id_postfix)
             )
         return bool(src)
 
@@ -509,7 +513,7 @@ class Link(object):
         so we need to update self.namespace parameter.
         """
 
-        cmd = ['ip', 'link', 'set'] + self.id_postfix + ['netns', self.netns]
+        cmd = ["ip", "link", "set"] + self.id_postfix + ["netns", self.netns]
         self._exec(self.namespace, cmd)
 
     def run(self):
@@ -537,31 +541,31 @@ def main():
     """Entry point."""
     module = AnsibleModule(
         argument_spec={
-            'name': {'aliases': ['device']},
-            'group_id': {},
-            'namespace': {},
-            'state': {'choices': ['up', 'down']},
-            'arp': {'type': 'bool'},
-            'multicast': {'type': 'bool'},
-            'promisc': {'type': 'bool'},
-            'txqueuelen': {'type': 'int'},
-            'mtu': {'type': 'int'},
-            'address': {},
-            'broadcast': {},
-            'netns': {},
-            'alias': {},
-            'master': {'type': 'str'},
-            'nomaster': {'type': 'bool'},
-            'group': {}
+            "name": {"aliases": ["device"]},
+            "group_id": {},
+            "namespace": {},
+            "state": {"choices": ["up", "down"]},
+            "arp": {"type": "bool"},
+            "multicast": {"type": "bool"},
+            "promisc": {"type": "bool"},
+            "txqueuelen": {"type": "int"},
+            "mtu": {"type": "int"},
+            "address": {},
+            "broadcast": {},
+            "netns": {},
+            "alias": {},
+            "master": {"type": "str"},
+            "nomaster": {"type": "bool"},
+            "group": {},
         },
         supports_check_mode=True,
-        mutually_exclusive=[['group_id', 'group'], ['name', 'group_id']],
-        required_one_of=[['name', 'group_id']]
+        mutually_exclusive=[["group_id", "group"], ["name", "group_id"]],
+        required_one_of=[["name", "group_id"]],
     )
 
     link = Link(module)
     link.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

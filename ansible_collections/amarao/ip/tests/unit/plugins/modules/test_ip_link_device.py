@@ -3,13 +3,15 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
 import pytest
 import mock
 from ansible_collections.amarao.ip.plugins.modules import ip_link_device  # noqa
+
 # from collections import defaultdict
 
 
@@ -21,11 +23,12 @@ class defaultdict(dict):  # workaround for broken pylint
             return None
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def Module():
     class Module:
         def __init__(self, d):
             self.params = defaultdict(d)
+
         check_mode = False
         fail_res = {}
         exit_res = {}
@@ -40,11 +43,9 @@ def Module():
     return Module
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def LinkDevice():
-    with mock.patch.object(
-        ip_link_device.LinkDevice, "is_exists", return_value=False
-    ):
+    with mock.patch.object(ip_link_device.LinkDevice, "is_exists", return_value=False):
         with mock.patch.object(
             ip_link_device.LinkDevice, "_exec", return_value=(0, "", "")
         ):
@@ -52,53 +53,62 @@ def LinkDevice():
 
 
 def test_veth_create(Module, LinkDevice):
-    mod = Module({
-        'name': 'veth0',
-        'state': 'present',
-        'type': 'veth'
-    })
+    mod = Module({"name": "veth0", "state": "present", "type": "veth"})
     link = LinkDevice(mod)
     link.run()
-    expected = ['ip', 'link', 'add', 'name', 'veth0', 'type', 'veth']
+    expected = ["ip", "link", "add", "name", "veth0", "type", "veth"]
     assert link._exec.call_args[0][1] == expected
 
 
 def test_bond_create_no_params(Module, LinkDevice):
-    mod = Module({
-        'name': 'bond0',
-        'state': 'present',
-        'type': 'bond'
-    })
+    mod = Module({"name": "bond0", "state": "present", "type": "bond"})
     link = LinkDevice(mod)
     link.run()
-    expected = ['ip', 'link', 'add', 'name', 'bond0', 'type', 'bond']
+    expected = ["ip", "link", "add", "name", "bond0", "type", "bond"]
     assert link._exec.call_args[0][1] == expected
 
 
 def test_bond_create_params(Module, LinkDevice):
-    mod = Module({
-        'name': 'bond0',
-        'state': 'present',
-        'type': 'bond',
-        'bond_options': {
-            'mode': '802.3ad',
-            'miimon': 42,
-            'updelay': 10,
-            'downdelay': 33,
-            'xmit_hash_policy': 'layer3+4',
-            'num_grat_arp': 13,
-            'lacp_rate': 'fast',
+    mod = Module(
+        {
+            "name": "bond0",
+            "state": "present",
+            "type": "bond",
+            "bond_options": {
+                "mode": "802.3ad",
+                "miimon": 42,
+                "updelay": 10,
+                "downdelay": 33,
+                "xmit_hash_policy": "layer3+4",
+                "num_grat_arp": 13,
+                "lacp_rate": "fast",
+            },
         }
-    })
+    )
     link = LinkDevice(mod)
     link.run()
     expected = [
-        'ip', 'link', 'add', 'name', 'bond0',
-        'type', 'bond', 'downdelay', '33',
-        'lacp_rate', 'fast', 'miimon', '42',
-        'mode', '802.3ad', 'num_grat_arp', '13',
-        'updelay', '10', 'xmit_hash_policy',
-        'layer3+4'
+        "ip",
+        "link",
+        "add",
+        "name",
+        "bond0",
+        "type",
+        "bond",
+        "downdelay",
+        "33",
+        "lacp_rate",
+        "fast",
+        "miimon",
+        "42",
+        "mode",
+        "802.3ad",
+        "num_grat_arp",
+        "13",
+        "updelay",
+        "10",
+        "xmit_hash_policy",
+        "layer3+4",
     ]
 
     assert link._exec.call_args[0][1] == expected

@@ -9,13 +9,16 @@
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
-from __future__ import (absolute_import, division, print_function)
+from __future__ import absolute_import, division, print_function
+
 __metaclass__ = type
 
 
-ANSIBLE_METADATA = {'metadata_version': '1.1',
-                    'status': ['preview'],
-                    'supported_by': 'community'}
+ANSIBLE_METADATA = {
+    "metadata_version": "1.1",
+    "status": ["preview"],
+    "supported_by": "community",
+}
 
 DOCUMENTATION = """
 ---
@@ -1278,172 +1281,181 @@ from ansible.module_utils._text import to_text
 __metaclass__ = type
 
 
-BOOLS = ['off', 'on']
+BOOLS = ["off", "on"]
 
 
 TYPE_COMMANDS = {
-    'vlan': {
-        'protocol': lambda proto: ['protocol', proto],
-        'id': lambda id: ['id', str(id)],
-        'reorder_hdr': lambda flag: ['reorder_hdr', BOOLS[flag]],
-        'gvrp': lambda flag: ['gvrp', BOOLS[flag]],
-        'mvrp': lambda flag: ['mvrp', BOOLS[flag]],
-        'loose_binding': lambda flag: ['loose_binding', BOOLS[flag]],
-        'bridge_binding': lambda flag: ['bridge_binding', BOOLS[flag]],
+    "vlan": {
+        "protocol": lambda proto: ["protocol", proto],
+        "id": lambda id: ["id", str(id)],
+        "reorder_hdr": lambda flag: ["reorder_hdr", BOOLS[flag]],
+        "gvrp": lambda flag: ["gvrp", BOOLS[flag]],
+        "mvrp": lambda flag: ["mvrp", BOOLS[flag]],
+        "loose_binding": lambda flag: ["loose_binding", BOOLS[flag]],
+        "bridge_binding": lambda flag: ["bridge_binding", BOOLS[flag]],
         # man ip says that 'The format is FROM:TO with muliple mappings
         # separated by spaces.
         # experiments shows that each mapping should be a separate
         # argument
-        'ingress_qos_map': lambda map: ['ingress-qos-map'] + map,
-        'egress_qos_map': lambda map: ['egress-qos-map'] + map,
+        "ingress_qos_map": lambda map: ["ingress-qos-map"] + map,
+        "egress_qos_map": lambda map: ["egress-qos-map"] + map,
     },
-    'vxlan': {
-        'id': lambda id: ['id', str(id)],
-        'dev': lambda dev: ['dev', dev],
-        'group': lambda group: ['group', group],
-        'remote': lambda ip: ['remote', ip],
-        'local': lambda ip: ['local', ip],
-        'ttl': lambda ttl: ['ttl', str(ttl)],
-        'tos': lambda tos: ['tos', str(tos)],
-        'df': lambda df: ['df', str(df)],
-        'flowlabel': lambda label: ['flowlabel', label],
-        'dstport': lambda port: ['dstport', str(port)],
-        'srcport': lambda port: ['srcport', ' '.join(map(str, port))],
-        'learning': lambda flag: [['nolearning', 'learning'][flag]],
-        'rsc': lambda flag: [['norsc', 'rsc'][flag]],
-        'proxy': lambda flag: [['noproxy', 'proxy'][flag]],
-        'l2miss': lambda flag: [['nol2miss', 'l2miss'][flag]],
-        'l3miss': lambda flag: [['nol3miss', 'l3miss'][flag]],
-        'udpcsum': lambda flag: [['noudpcsum', 'udpcsum'][flag]],
-        'udp6zerocsumtx': lambda flag: [
-            ['noudp6zerocsumtx', 'udp6zerocsumtx'][flag]
+    "vxlan": {
+        "id": lambda id: ["id", str(id)],
+        "dev": lambda dev: ["dev", dev],
+        "group": lambda group: ["group", group],
+        "remote": lambda ip: ["remote", ip],
+        "local": lambda ip: ["local", ip],
+        "ttl": lambda ttl: ["ttl", str(ttl)],
+        "tos": lambda tos: ["tos", str(tos)],
+        "df": lambda df: ["df", str(df)],
+        "flowlabel": lambda label: ["flowlabel", label],
+        "dstport": lambda port: ["dstport", str(port)],
+        "srcport": lambda port: ["srcport", " ".join(map(str, port))],
+        "learning": lambda flag: [["nolearning", "learning"][flag]],
+        "rsc": lambda flag: [["norsc", "rsc"][flag]],
+        "proxy": lambda flag: [["noproxy", "proxy"][flag]],
+        "l2miss": lambda flag: [["nol2miss", "l2miss"][flag]],
+        "l3miss": lambda flag: [["nol3miss", "l3miss"][flag]],
+        "udpcsum": lambda flag: [["noudpcsum", "udpcsum"][flag]],
+        "udp6zerocsumtx": lambda flag: [["noudp6zerocsumtx", "udp6zerocsumtx"][flag]],
+        "udp6zerocsumrx": lambda flag: [["noudp6zerocsumrx", "udp6zerocsumrx"][flag]],
+        "ageing": lambda age: ["ageing", str(age)],
+        "maxaddress": lambda age: ["maxaddress", str(age)],
+        "external": lambda flag: [["noexternal", "external"][flag]],
+        "gbp": lambda flag: [None, "gbp"][flag],
+        "gpe": lambda flag: [None, "gpe"][flag],
+    },
+    "veth": {
+        "peer_name": lambda arg: ["peer", "name", arg],
+    },
+    "gre": {
+        "remote": lambda ip: ["remote", ip],
+        "local": lambda ip: ["local", ip],
+        "iseq": lambda flag: [["noiseq", "iseq"][flag]],
+        "oseq": lambda flag: [["nooseq", "oseq"][flag]],
+        "ikey": lambda key: ["noikey"] if key == "no" else ["ikey", str(key)],
+        "okey": lambda key: ["nookey"] if key == "no" else ["okey", str(key)],
+        "key": lambda key: ["nokey"] if key == "no" else ["key", str(key)],
+        "icsum": lambda flag: [["noicsum", "icsum"][flag]],
+        "ocsum": lambda flag: [["noocsum", "ocsum"][flag]],
+        "csum": lambda flag: [["nocsum", "csum"][flag]],
+        "ttl": lambda ttl: ["ttl", str(ttl)],
+        "tos": lambda tos: ["tos", str(tos)],
+        "pmtudisc": lambda flag: [["nopmtudisc", "nopmtudisc"][flag]],
+        "ignore_df": lambda flag: [["noignore-df", "ignore-df"][flag]],
+        "dev": lambda dev: ["dev", dev],
+        "external": lambda flag: [["external"] if flag else []],
+    },
+    "gretap": {
+        "remote": lambda ip: ["remote", ip],
+        "local": lambda ip: ["local", ip],
+        "iseq": lambda flag: [["noiseq", "iseq"][flag]],
+        "oseq": lambda flag: [["nooseq", "oseq"][flag]],
+        "ikey": lambda key: ["noikey"] if key == "no" else ["ikey", str(key)],
+        "okey": lambda key: ["nookey"] if key == "no" else ["okey", str(key)],
+        "key": lambda key: ["nokey"] if key == "no" else ["key", str(key)],
+        "icsum": lambda flag: [["noicsum", "icsum"][flag]],
+        "ocsum": lambda flag: [["noocsum", "ocsum"][flag]],
+        "csum": lambda flag: [["nocsum", "csum"][flag]],
+        "ttl": lambda ttl: ["ttl", str(ttl)],
+        "tos": lambda tos: ["tos", str(tos)],
+        "pmtudisc": lambda flag: [["nopmtudisc", "nopmtudisc"][flag]],
+        "ignore_df": lambda flag: [["noignore-df", "ignore-df"][flag]],
+        "dev": lambda dev: ["dev", dev],
+        "external": lambda flag: [["external"] if flag else []],
+    },
+    "dummy": {},
+    "bridge": {
+        "ageing_time": lambda time: ["ageing_time", str(time)],
+        "group_fwd_mask": lambda mask: ["group_fwd_mask", str(mask)],
+        "group_address": lambda addr: ["group_address", str(addr)],
+        "forward_delay": lambda delay: ["forward_delay", str(delay)],
+        "hello_time": lambda time: ["hello_time", str(time)],
+        "max_age": lambda age: ["max_age", str(age)],
+        "stp": lambda state: ["stp_state", str(int(state))],
+        "priority": lambda pri: ["priority", str(pri)],
+        "vlan_filtering": lambda flag: ["vlan_filtering", str(int(flag))],
+        "vlan_protocol": lambda proto: ["vlan_protocol", str(proto)],
+        "vlan_default_pvid": lambda pvid: ["vlan_default_pvid", str(pvid)],
+        "vlan_stats": lambda flag: ["vlan_stats_enabled", str(int(flag))],
+        "vlan_stats_per_port": lambda flag: ["vlan_stats_per_port", str(int(flag))],
+        "mcast_snooping": lambda flag: ["mcast_snooping", str(int(flag))],
+        "mcast_router": lambda mode: ["mcast_router", str(mode)],
+        "mcast_query_use_ifaddr": lambda flag: [
+            "mcast_query_use_ifaddr",
+            str(int(flag)),
         ],
-        'udp6zerocsumrx': lambda flag: [
-            ['noudp6zerocsumrx', 'udp6zerocsumrx'][flag]
+        "mcast_querier": lambda flag: ["mcast_querier", str(int(flag))],
+        "mcast_querier_interval": lambda interval: [
+            "mcast_querier_interval",
+            str(interval),
         ],
-        'ageing': lambda age: ['ageing', str(age)],
-        'maxaddress': lambda age: ['maxaddress', str(age)],
-        'external': lambda flag: [['noexternal', 'external'][flag]],
-        'gbp': lambda flag: [None, 'gbp'][flag],
-        'gpe': lambda flag: [None, 'gpe'][flag],
+        "mcast_hash_max": lambda max_hash: ["mcast_hash_max", str(max_hash)],
+        "mcast_last_member_count": lambda cnt: ["mcast_last_member_count", str(cnt)],
+        "mcast_last_member_interval": lambda interval: [
+            "mcast_last_member_interval",
+            str(interval),
+        ],
+        "mcast_startup_query_count": lambda cnt: [
+            "mcast_startup_query_count",
+            str(cnt),
+        ],
+        "mcast_startup_query_interval": lambda interval: [
+            "mcast_startup_query_interval",
+            str(interval),
+        ],
+        "mcast_query_interval": lambda interval: [
+            "mcast_query_interval",
+            str(interval),
+        ],
+        "mcast_query_response_interval": lambda interval: [
+            "mcast_query_response_interval",
+            str(interval),
+        ],
+        "mcast_membership_interval": lambda interval: [
+            "mcast_membership_interval",
+            str(interval),
+        ],
+        "mcast_stats": lambda flg: ["mcast_stats_enabled", str(int(flg))],
+        "mcast_igmp_version": lambda ver: ["mcast_igmp_version", str(ver)],
+        "mcast_mld_version": lambda ver: ["mcast_mld_version", str(ver)],
+        "nf_call_iptables": lambda flag: ["nf_call_iptables", str(int(flag))],
+        "nf_call_ip6tables": lambda flag: ["nf_call_iptables", str(int(flag))],
+        "nf_call_arptables": lambda flag: ["nf_call_arptables", str(int(flag))],
     },
-    'veth': {
-        'peer_name': lambda arg: ['peer', 'name', arg],
+    "bond": {
+        "mode": lambda mode: ["mode", mode],
+        "active_slave": lambda dev: ["active_slave", dev],
+        "clear_active_slave": lambda flag: ([], ["clear_active_slave"])[int(flag)],
+        "miimon": lambda msec: ["miimon", str(msec)],
+        "updelay": lambda msec: ["updelay", str(msec)],
+        "downdelay": lambda msec: ["downdelay", str(msec)],
+        "use_carrier": lambda flag: ["use_carrier", ("0", "1")[int(flag)]],
+        "arp_interval": lambda msec: ["arp_interval", str(msec)],
+        "arp_validate": lambda val: ["arp_validate", str(val)],
+        "arp_all_targets": lambda val: ["arp_all_targets", str(val)],
+        "arp_ip_target": lambda tgts: ["arp_ip_target", ",".join(tgts)],
+        "primary": lambda dev: ["primary", dev],
+        "primary_reselect": lambda param: ["primary_reselect", param],
+        "fail_over_mac": lambda param: ["fail_over_mac", param],
+        "xmit_hash_policy": lambda param: ["xmit_hash_policy", param],
+        "resend_igmp": lambda cnt: ["resend_igmp", str(cnt)],
+        "num_grat_arp": lambda cnt: ["num_grat_arp", str(cnt)],
+        "all_slaves_active": lambda flag: ["all_slaves_active", ("0", "1")[int(flag)]],
+        "min_links": lambda cnt: ["min_links", str(cnt)],
+        "lp_interval": lambda msec: ["lp_interval", str(msec)],
+        "packets_per_slave": lambda cnt: ["packets_per_slave", int(cnt)],
+        "tlb_dynamic_lb": lambda flag: ["tlb_dynamic_lb", ("0", "1")[int(flag)]],
+        "lacp_rate": lambda param: ["lacp_rate", str(param)],
+        "ad_select": lambda param: ["ad_select", str(param)],
+        "ad_user_port_key": lambda val: ["ad_user_port_key", str(val)],
+        "ad_actor_sys_prio": lambda val: ["ad_actor_sys_prio", str(val)],
+        "ad_actor_system": lambda addr: ["ad_actor_system", str(addr)],
     },
-    'gre': {
-        'remote': lambda ip: ['remote', ip],
-        'local': lambda ip: ['local', ip],
-        'iseq': lambda flag: [['noiseq', 'iseq'][flag]],
-        'oseq': lambda flag: [['nooseq', 'oseq'][flag]],
-        'ikey': lambda key: ['noikey'] if key == 'no' else ['ikey', str(key)],
-        'okey': lambda key: ['nookey'] if key == 'no' else ['okey', str(key)],
-        'key': lambda key: ['nokey'] if key == 'no' else ['key', str(key)],
-        'icsum': lambda flag: [['noicsum', 'icsum'][flag]],
-        'ocsum': lambda flag: [['noocsum', 'ocsum'][flag]],
-        'csum': lambda flag: [['nocsum', 'csum'][flag]],
-        'ttl': lambda ttl: ['ttl', str(ttl)],
-        'tos': lambda tos: ['tos', str(tos)],
-        'pmtudisc': lambda flag: [['nopmtudisc', 'nopmtudisc'][flag]],
-        'ignore_df': lambda flag: [['noignore-df', 'ignore-df'][flag]],
-        'dev': lambda dev: ['dev', dev],
-        'external': lambda flag: [['external'] if flag else []],
+    "vrf": {
+        "table": lambda table_id: ["table", str(table_id)],
     },
-    'gretap': {
-        'remote': lambda ip: ['remote', ip],
-        'local': lambda ip: ['local', ip],
-        'iseq': lambda flag: [['noiseq', 'iseq'][flag]],
-        'oseq': lambda flag: [['nooseq', 'oseq'][flag]],
-        'ikey': lambda key: ['noikey'] if key == 'no' else ['ikey', str(key)],
-        'okey': lambda key: ['nookey'] if key == 'no' else ['okey', str(key)],
-        'key': lambda key: ['nokey'] if key == 'no' else ['key', str(key)],
-        'icsum': lambda flag: [['noicsum', 'icsum'][flag]],
-        'ocsum': lambda flag: [['noocsum', 'ocsum'][flag]],
-        'csum': lambda flag: [['nocsum', 'csum'][flag]],
-        'ttl': lambda ttl: ['ttl', str(ttl)],
-        'tos': lambda tos: ['tos', str(tos)],
-        'pmtudisc': lambda flag: [['nopmtudisc', 'nopmtudisc'][flag]],
-        'ignore_df': lambda flag: [['noignore-df', 'ignore-df'][flag]],
-        'dev': lambda dev: ['dev', dev],
-        'external': lambda flag: [['external'] if flag else []],
-    },
-    'dummy': {},
-    'bridge': {
-        'ageing_time': lambda time: ['ageing_time', str(time)],
-        'group_fwd_mask': lambda mask: ['group_fwd_mask', str(mask)],
-        'group_address': lambda addr: ['group_address', str(addr)],
-        'forward_delay': lambda delay: ['forward_delay', str(delay)],
-        'hello_time': lambda time: ['hello_time', str(time)],
-        'max_age': lambda age: ['max_age', str(age)],
-        'stp': lambda state: ['stp_state', str(int(state))],
-        'priority': lambda pri: ['priority', str(pri)],
-        'vlan_filtering': lambda flag: ['vlan_filtering', str(int(flag))],
-        'vlan_protocol': lambda proto: ['vlan_protocol', str(proto)],
-        'vlan_default_pvid': lambda pvid: ['vlan_default_pvid', str(pvid)],
-        'vlan_stats': lambda flag: ['vlan_stats_enabled', str(int(flag))],
-        'vlan_stats_per_port': lambda flag: [
-            'vlan_stats_per_port', str(int(flag))],
-        'mcast_snooping': lambda flag: ['mcast_snooping', str(int(flag))],
-        'mcast_router': lambda mode: ['mcast_router', str(mode)],
-        'mcast_query_use_ifaddr': lambda flag: [
-            'mcast_query_use_ifaddr', str(int(flag))],
-        'mcast_querier': lambda flag: ['mcast_querier', str(int(flag))],
-        'mcast_querier_interval': lambda interval: [
-            'mcast_querier_interval', str(interval)],
-        'mcast_hash_max': lambda max_hash: ['mcast_hash_max', str(max_hash)],
-        'mcast_last_member_count': lambda cnt: [
-            'mcast_last_member_count', str(cnt)],
-        'mcast_last_member_interval': lambda interval: [
-            'mcast_last_member_interval', str(interval)],
-        'mcast_startup_query_count': lambda cnt: [
-            'mcast_startup_query_count', str(cnt)],
-        'mcast_startup_query_interval': lambda interval: [
-            'mcast_startup_query_interval', str(interval)],
-        'mcast_query_interval': lambda interval: [
-            'mcast_query_interval', str(interval)],
-        'mcast_query_response_interval': lambda interval: [
-            'mcast_query_response_interval', str(interval)],
-        'mcast_membership_interval': lambda interval: [
-            'mcast_membership_interval', str(interval)],
-        'mcast_stats': lambda flg: ['mcast_stats_enabled', str(int(flg))],
-        'mcast_igmp_version': lambda ver: ['mcast_igmp_version', str(ver)],
-        'mcast_mld_version': lambda ver: ['mcast_mld_version', str(ver)],
-        'nf_call_iptables': lambda flag: ['nf_call_iptables', str(int(flag))],
-        'nf_call_ip6tables': lambda flag: ['nf_call_iptables', str(int(flag))],
-        'nf_call_arptables': lambda flag: [
-            'nf_call_arptables', str(int(flag))],
-    },
-    'bond': {
-        "mode": lambda mode: ['mode', mode],
-        "active_slave": lambda dev: ['active_slave', dev],
-        "clear_active_slave": lambda flag: ([], ['clear_active_slave'])[int(flag)],
-        "miimon": lambda msec: ['miimon', str(msec)],
-        "updelay": lambda msec: ['updelay', str(msec)],
-        "downdelay": lambda msec: ['downdelay', str(msec)],
-        "use_carrier": lambda flag: ['use_carrier', ('0', '1')[int(flag)]],
-        "arp_interval": lambda msec: ['arp_interval', str(msec)],
-        "arp_validate": lambda val: ['arp_validate', str(val)],
-        "arp_all_targets": lambda val: ['arp_all_targets', str(val)],
-        "arp_ip_target": lambda tgts: ['arp_ip_target', ','.join(tgts)],
-        "primary": lambda dev: ['primary', dev],
-        "primary_reselect": lambda param: ['primary_reselect', param],
-        "fail_over_mac": lambda param: ['fail_over_mac', param],
-        "xmit_hash_policy": lambda param: ['xmit_hash_policy', param],
-        "resend_igmp": lambda cnt: ['resend_igmp', str(cnt)],
-        "num_grat_arp": lambda cnt: ['num_grat_arp', str(cnt)],
-        "all_slaves_active": lambda flag: ['all_slaves_active', ('0', '1')[int(flag)]],
-        "min_links": lambda cnt: ['min_links', str(cnt)],
-        "lp_interval": lambda msec: ['lp_interval', str(msec)],
-        "packets_per_slave": lambda cnt: ['packets_per_slave', int(cnt)],
-        "tlb_dynamic_lb": lambda flag: ['tlb_dynamic_lb', ('0', '1')[int(flag)]],
-        "lacp_rate": lambda param: ['lacp_rate', str(param)],
-        "ad_select": lambda param: ['ad_select', str(param)],
-        "ad_user_port_key": lambda val: ['ad_user_port_key', str(val)],
-        "ad_actor_sys_prio": lambda val: ['ad_actor_sys_prio', str(val)],
-        "ad_actor_system": lambda addr: ['ad_actor_system', str(addr)],
-    },
-    'vrf': {
-        "table": lambda table_id: ['table', str(table_id)],
-    }
 }
 
 
@@ -1451,19 +1463,24 @@ class LinkDevice(object):
     """Main class for the module."""
 
     params_list = [  # module paramters which aren't passed to ip or special
-        'name', 'namespace', 'group_id', 'state', 'type', 'link',
-        'search_namespaces'
+        "name",
+        "namespace",
+        "group_id",
+        "state",
+        "type",
+        "link",
+        "search_namespaces",
     ]
     knob_cmds = {  # module paramtes which are directly translates to ip args
-        'txqueuelen': lambda len: ['txqueuelen', str(len)],
-        'address': lambda addr: ['address', addr],
-        'broadcast': lambda addr: ['broadcast', addr],
-        'mtu': lambda mtu: ['mtu', str(mtu)],
-        'index': lambda idx: ['index', str(idx)],
-        'numtxqueues': lambda num: ['numtxqueues', str(num)],
-        'numrxqueues': lambda num: ['numrxqueues', str(num)],
-        'gso_max_size': lambda size: ['gso_max_size', str(size)],
-        'gso_max_segs': lambda size: ['gso_max_segs', str(size)],
+        "txqueuelen": lambda len: ["txqueuelen", str(len)],
+        "address": lambda addr: ["address", addr],
+        "broadcast": lambda addr: ["broadcast", addr],
+        "mtu": lambda mtu: ["mtu", str(mtu)],
+        "index": lambda idx: ["index", str(idx)],
+        "numtxqueues": lambda num: ["numtxqueues", str(num)],
+        "numrxqueues": lambda num: ["numrxqueues", str(num)],
+        "gso_max_size": lambda size: ["gso_max_size", str(size)],
+        "gso_max_segs": lambda size: ["gso_max_segs", str(size)],
     }
 
     def __init__(self, module):
@@ -1476,22 +1493,19 @@ class LinkDevice(object):
             self.knobs[knob] = module.params[knob]
         for param in self.params_list:
             setattr(self, param, module.params[param])
-        if self.state == 'present' and self.group_id:
+        if self.state == "present" and self.group_id:
             self.module.fail_json(
-                msg=to_text('State=present can not be used with group_id.')
+                msg=to_text("State=present can not be used with group_id.")
             )
         if self.name:
-            self.id_postfix = ['dev', self.name]
+            self.id_postfix = ["dev", self.name]
         if self.group_id:
-            self.id_postfix = ['group', self.group_id]
+            self.id_postfix = ["group", self.group_id]
 
-        if self.state == 'present' and not self.type:
-            self.module.fail_json(msg=to_text('State=present requires type'))
-        if self.state == 'present':
-            self.type_options = (
-                module.params.get(self.type + '_options') or
-                {}
-            )
+        if self.state == "present" and not self.type:
+            self.module.fail_json(msg=to_text("State=present requires type"))
+        if self.state == "present":
+            self.type_options = module.params.get(self.type + "_options") or {}
             self._validate_type_options()
 
     def _validate_type_options(self):
@@ -1500,17 +1514,16 @@ class LinkDevice(object):
         unknown_type_options = type_options - possible_type_options
         if unknown_type_options:
             self.module.fail_json(
-                msg=to_text('Unknown option(s) for type %s: %s' % (
-                    self.type, ', '.join(unknown_type_options)
-                ))
+                msg=to_text(
+                    "Unknown option(s) for type %s: %s"
+                    % (self.type, ", ".join(unknown_type_options))
+                )
             )
 
     def _exec(self, namespace, cmd, not_found_is_ok=False):
         if namespace:
             return self._exec(
-                None,
-                ['ip', 'netns', 'exec', namespace] + cmd,
-                not_found_is_ok
+                None, ["ip", "netns", "exec", namespace] + cmd, not_found_is_ok
             )
         # if self.type=='gre' and 'add' in cmd:
         #     self.module.fail_json(msg=to_text(cmd))
@@ -1522,16 +1535,13 @@ class LinkDevice(object):
                 if self.name:
                     not_found_msg = 'Device "%s" does not exist' % self.name
                     if not_found_msg in err:
-                        return ''
-            self.module.fail_json(
-                msg=to_text(err),
-                failed_command=' '.join(cmd)
-            )
+                        return ""
+            self.module.fail_json(msg=to_text(err), failed_command=" ".join(cmd))
         return out
 
     def is_exists(self, namespaces=None):
         """Check if interface is exists in namespaces."""
-        cmd = ['ip', '-o', 'link', 'show'] + self.id_postfix
+        cmd = ["ip", "-o", "link", "show"] + self.id_postfix
         raw_output = self._exec(self.namespace, cmd, not_found_is_ok=True)
         res = bool(raw_output.strip())
         if res:
@@ -1546,14 +1556,21 @@ class LinkDevice(object):
 
     def _link_name(self):
         if self.link:
-            return ['link', self.link]
+            return ["link", self.link]
         return []
 
     def _common_args(self):
         args = []
         order = [
-            'txqueuelen', 'address', 'broadcast', 'mtu', 'index',
-            'numtxqueues', 'numrxqueues', 'gso_max_size', 'gso_max_segs'
+            "txqueuelen",
+            "address",
+            "broadcast",
+            "mtu",
+            "index",
+            "numtxqueues",
+            "numrxqueues",
+            "gso_max_size",
+            "gso_max_segs",
         ]
         for knob_name in order:
             knob_value = self.knobs[knob_name]
@@ -1562,7 +1579,7 @@ class LinkDevice(object):
         return args
 
     def _type_args(self):
-        args = ['type', self.type]
+        args = ["type", self.type]
         typecmd = TYPE_COMMANDS[self.type]
         for opt_name, opt_value in sorted(self.type_options.items()):
             if opt_value:
@@ -1579,26 +1596,26 @@ class LinkDevice(object):
         #           [ gso_max_size BYTES ] [ gso_max_segs SEGMENTS ]
         #           type TYPE [ ARGS ]
 
-        cmd = ['ip', 'link', 'add']
+        cmd = ["ip", "link", "add"]
         cmd += self._link_name()
-        cmd += ['name', self.name]
+        cmd += ["name", self.name]
         cmd += self._common_args()
         cmd += self._type_args()
         self._exec(self.namespace, cmd)
 
     def _delete(self):
-        cmd = ['ip', 'link', 'delete'] + self.id_postfix
+        cmd = ["ip", "link", "delete"] + self.id_postfix
         self._exec(self.namespace, cmd)
 
     def run(self):
         changed = False
-        if self.state == 'absent':
+        if self.state == "absent":
             exists = self.is_exists()
             if exists:
                 if not self.check_mode:
                     self._delete()
                 changed = True
-        if self.state == 'present':
+        if self.state == "present":
             exists = self.is_exists(namespaces=self.search_namespaces)
             if not exists:
                 if not self.check_mode:
@@ -1611,51 +1628,64 @@ def main():
     """Entry point."""
     module = AnsibleModule(
         argument_spec={
-            'name': {'aliases': ['device']},
-            'group_id': {},
-            'namespace': {},
-            'search_namespaces': {'type': 'list'},
-            'state': {'choices': ['present', 'absent'], 'required': True},
-            'type': {'choices': [
-                'veth', 'vlan', 'vxlan', 'gre',
-                'gretap', 'dummy', 'bridge', 'bond',
-                'vrf'
-            ]},
-            'link': {},
-            'txqueuelen': {'type': 'int'},
-            'address': {},
-            'broadcast': {},
-            'mtu': {'type': 'int'},
-            'index': {'type': 'int'},
-            'numtxqueues': {'type': 'int'},
-            'numrxqueues': {'type': 'int'},
-            'gso_max_size': {'type': 'int'},
-            'gso_max_segs': {'type': 'int'},
-            'veth_options': {'type': 'dict'},
-            'vlan_options': {'type': 'dict'},
-            'vxlan_options': {'type': 'dict'},
-            'gre_options': {'type': 'dict'},
-            'gretap_options': {'type': 'dict'},
-            'bridge_options': {'type': 'dict'},
-            'bond_options': {'type': 'dict'},
-            'vrf_options': {'type': 'dict'},
+            "name": {"aliases": ["device"]},
+            "group_id": {},
+            "namespace": {},
+            "search_namespaces": {"type": "list"},
+            "state": {"choices": ["present", "absent"], "required": True},
+            "type": {
+                "choices": [
+                    "veth",
+                    "vlan",
+                    "vxlan",
+                    "gre",
+                    "gretap",
+                    "dummy",
+                    "bridge",
+                    "bond",
+                    "vrf",
+                ]
+            },
+            "link": {},
+            "txqueuelen": {"type": "int"},
+            "address": {},
+            "broadcast": {},
+            "mtu": {"type": "int"},
+            "index": {"type": "int"},
+            "numtxqueues": {"type": "int"},
+            "numrxqueues": {"type": "int"},
+            "gso_max_size": {"type": "int"},
+            "gso_max_segs": {"type": "int"},
+            "veth_options": {"type": "dict"},
+            "vlan_options": {"type": "dict"},
+            "vxlan_options": {"type": "dict"},
+            "gre_options": {"type": "dict"},
+            "gretap_options": {"type": "dict"},
+            "bridge_options": {"type": "dict"},
+            "bond_options": {"type": "dict"},
+            "vrf_options": {"type": "dict"},
         },
         supports_check_mode=True,
         mutually_exclusive=[
-            ['group_id', 'group'],
-            ['name', 'group_id'],
+            ["group_id", "group"],
+            ["name", "group_id"],
             [
-                'vlan_options', 'vxlan_options', 'gre_options',
-                'gretap_options', 'veth_options', 'bridge_options',
-                'bond_options', 'vrf_options'
-            ]
+                "vlan_options",
+                "vxlan_options",
+                "gre_options",
+                "gretap_options",
+                "veth_options",
+                "bridge_options",
+                "bond_options",
+                "vrf_options",
+            ],
         ],
-        required_one_of=[['name', 'group_id']],
+        required_one_of=[["name", "group_id"]],
     )
 
     link_dev = LinkDevice(module)
     link_dev.run()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
